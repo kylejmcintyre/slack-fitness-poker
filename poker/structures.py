@@ -69,3 +69,30 @@ for c in cards:
 
 for key, value in ord_counts.items():
   assert value == 4
+
+currencies = {
+  "push-ups": {
+    "singular": "push-up",
+  },
+  "sit-ups": {
+    "singular": "sit-up",
+  },
+  "burpees": {
+    "singular": "burpee",
+  },
+}
+
+currency_map = {
+  'push-up': 'push-ups',
+  'pushup': 'push-ups',
+  'pushups': 'push-ups',
+  'push-ups': 'push-ups',
+  'situp': 'sit-ups',
+  'sit-up': 'sit-ups',
+  'situps': 'sit-ups',
+  'sit-ups': 'sit-ups',
+  'burpees': 'sit-ups',
+  'burpee': 'burpees',
+}
+
+
