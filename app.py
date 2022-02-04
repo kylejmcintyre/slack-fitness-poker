@@ -45,7 +45,7 @@ def index():
       },
       {
         "fallback": "A playing card",
-        "image_url": "https://{site}/static/8_of_clubs.png",
+        "image_url": f"https://{site}/static/8_of_clubs.png",
       },
       {
         "fallback": "A playing card",
@@ -53,10 +53,43 @@ def index():
       },
       {
         "fallback": "A playing card",
-        "image_url": "https://{site}/static/2_of_clubs.png",
+        "image_url": f"https://{site}/static/2_of_clubs.png",
       }
     ]
-    slack.chat_postMessage(channel='awesomeness', text=f"Here's the river:", attachments=attachments)
+
+    blocks = [
+        {
+            "type": "image",
+            "title": {
+                "type": "plain_text",
+                "text": "Please enjoy this photo of a kitten"
+            },
+            "image_url": f"https://{site}/static/2_of_clubs.png",
+            "alt_text": "An incredibly cute kitten."
+        },
+        {
+            "type": "image",
+            "title": {
+                "type": "plain_text",
+                "text": "Please enjoy this photo of a kitten"
+            },
+            "image_url": f"https://{site}/static/3_of_clubs.png",
+            "alt_text": "An incredibly cute kitten."
+        },
+        {
+            "type": "image",
+            "title": {
+                "type": "plain_text",
+                "text": "Please enjoy this photo of a kitten"
+            },
+            "image_url": f"https://{site}/static/4_of_clubs.png",
+            "alt_text": "An incredibly cute kitten."
+        }
+    ]
+
+    print(blocks)
+
+    slack.chat_postMessage(channel='awesomeness', text=f"Here's the river:", blocks=blocks)
     return {'cards': cards}
 
 @app.route("/slash-cmd", methods=["POST"])
