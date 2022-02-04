@@ -45,12 +45,16 @@ def index():
       },
       {
         "fallback": "A playing card",
+        "image_url": "https://{site}/static/8_of_clubs.png",
+      },
+      {
+        "fallback": "A playing card",
         "image_url": f"https://{site}/static/8_of_hearts.png",
       },
       {
         "fallback": "A playing card",
-        "image_url": "https://{site}/static/8_of_clubs.png",
-      },
+        "image_url": "https://{site}/static/2_of_clubs.png",
+      }
     ]
     slack.chat_postMessage(channel='awesomeness', text=f"Here's the river:", attachments=attachments)
     return {'cards': cards}
