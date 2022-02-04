@@ -67,7 +67,14 @@ def index():
             "type": "image",
             "image_url": f"https://{site}/static/2_of_clubs.png",
             "alt_text": "An incredibly cute kitten."
+        },
+        {
+   
+            "type": "image",
+            "image_url": f"https://{site}/static/3_of_clubs.png",
+            "alt_text": "An incredibly cute kitten."
         }
+
     ]
 
     print(blocks)
