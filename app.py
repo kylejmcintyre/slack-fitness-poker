@@ -59,6 +59,10 @@ def index():
 
     blocks = [
         {
+            "type": "header",
+            "text": "Here comes the river:",
+        },
+        {
             "type": "image",
             "image_url": f"https://{site}/static/2_of_clubs.png",
             "alt_text": "An incredibly cute kitten."
@@ -75,7 +79,7 @@ def index():
         }
     ]
 
-    slack.chat_postMessage(channel='awesomeness', text=f"Here's the river:", blocks=blocks)
+    slack.chat_postMessage(channel='awesomeness', blocks=blocks)
     return {'cards': cards}
 
 @app.route("/slash-cmd", methods=["POST"])
