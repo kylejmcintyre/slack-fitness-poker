@@ -34,24 +34,22 @@ currency_map = {
   #'plank': 'planking'
 }
 
+site = os.environ.get("SITE_URL")
 
 @app.route("/")
 def index():
     attachments = [
       {
         "fallback": "A playing card",
-        "image_url": "https://dcef-216-14-234-93.ngrok.io/static/2_of_spades.png",
-        "thumb_url": "https://dcef-216-14-234-93.ngrok.io/static/2_of_spades.png",
+        "image_url": f"https://{site}/static/2_of_spades.png",
       },
       {
         "fallback": "A playing card",
-        "image_url": "https://dcef-216-14-234-93.ngrok.io/static/8_of_hearts.png",
-        "thumb_url": "https://dcef-216-14-234-93.ngrok.io/static/8_of_hearts.png",
+        "image_url": f"https://{site}/static/8_of_hearts.png",
       },
       {
         "fallback": "A playing card",
-        "image_url": "https://dcef-216-14-234-93.ngrok.io/static/8_of_clubs.png",
-        "thumb_url": "https://dcef-216-14-234-93.ngrok.io/static/8_of_clubs.png",
+        "image_url": "https://{site}/static/8_of_clubs.png",
       },
     ]
     slack.chat_postMessage(channel='awesomeness', text=f"Here's the river:", attachments=attachments)
