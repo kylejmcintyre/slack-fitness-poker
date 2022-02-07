@@ -5,6 +5,8 @@ import random
 import itertools
 import time
 
+site  = os.environ.get("SITE_URL")
+
 from poker.structures import currency_map, currencies, cards, card_image_name
 
 import poker.db as db
