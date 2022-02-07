@@ -39,7 +39,7 @@ def start_game(slack, conn, game_id, state):
 
     # TODO dev hack
     #state['players'] = ['player1', 'player2', 'player3', 'player4']
-    state['handles'] = {player: state['host'] for player in state['players']}
+    state['handles'] = {player: player for player in state['players']}
 
     random.shuffle(state['players'])
 
