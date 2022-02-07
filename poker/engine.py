@@ -194,7 +194,7 @@ def double(slack, user, name, payload):
     conn.commit()
     conn.close()
 
-def get_bet_blocks(payload):
+def get_bet_blocks(payload, state):
     payload = json.dumps(payload)
     blocks = [
         {
@@ -214,7 +214,7 @@ def get_bet_blocks(payload):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": "Raise 5"
+                        "text": f"Raise {state['buyin']}"
                     },
                     "value": payload,
                     "action_id": "raise"
@@ -223,7 +223,7 @@ def get_bet_blocks(payload):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": "Raise 10"
+                        "text": f"Raise {state['buyin'] * 2}"
                     },
                     "value": payload,
                     "action_id": "double"
@@ -282,7 +282,7 @@ def advance_play(slack, conn, payload, state):
             state[f'{phase}-bets-idx'] = next_player_idx
             state['current_player']   = state['players'][next_player_idx]
             payload['player'] = state['current_player']
-            blocks = get_bet_blocks(payload)
+            blocks = get_bet_blocks(payload, state)
             time.sleep(2)
             response = slack.chat_postEphemeral(channel='fitness-poker', thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
         else:
