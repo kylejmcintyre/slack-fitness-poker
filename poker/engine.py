@@ -65,7 +65,7 @@ def start_game(slack, conn, game_id, state):
             {
                "title": {
                   "type": "plain_text",
-                  "text": f"Good luck {player} (I say that to everyone)"
+                  "text": f"Good luck (I say that to everyone)"
                 },
                 "type": "image",
                 "image_url": f"https://{site}/static/" + card_image_name(card1),
@@ -129,7 +129,7 @@ def fold(slack, user, name, payload):
 
     state['folded'].append(payload['player'])
 
-    response = slack.chat_postMessage(channel='fitness-poker', text=f"{payload['player']} folds", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel='fitness-poker', text=f"{name} folds", thread_ts=payload['thread_ts'])
 
     advance_play(slack, conn, payload, state)
 
@@ -145,7 +145,7 @@ def check(slack, user, name, payload, logger):
 
     state['bets'][payload['player']] = state['current_bet']
 
-    response = slack.chat_postMessage(channel='fitness-poker', text=f"{payload['player']} checks", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel='fitness-poker', text=f"{name} checks", thread_ts=payload['thread_ts'])
 
     logger.info(state) 
 
@@ -167,7 +167,7 @@ def single(slack, user, name, payload):
 
     state['bets'][payload['player']] = state['current_bet']
 
-    response = slack.chat_postMessage(channel='fitness-poker', text=f"{payload['player']} raises {state['buyin']}", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel='fitness-poker', text=f"{name} raises {state['buyin']}", thread_ts=payload['thread_ts'])
 
     advance_play(slack, conn, payload, state)
 
@@ -185,7 +185,7 @@ def double(slack, user, name, payload):
 
     state['bets'][payload['player']] = state['current_bet']
 
-    response = slack.chat_postMessage(channel='fitness-poker', text=f"{payload['player']} raises {state['buyin'] * 2}", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel='fitness-poker', text=f"{name} raises {state['buyin'] * 2}", thread_ts=payload['thread_ts'])
 
     advance_play(slack, conn, payload, state)
 
@@ -390,14 +390,14 @@ def finish_game(slack, conn, payload, state):
                 
         if len(winners) == 1:
             winner = list(winners)[0]
-            text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> ({winner}) - you won with a {scoring.hands[int(results[0]['lex'][0])]['name']}"
+            text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> - you won with a {scoring.hands[int(results[0]['lex'][0])]['name']}"
             for player in [player for player in state['players'] if player != winner]:
-                text += f"\n- <@{state['handles'][player]}> ({player}) owes {state['bets'][player]} {state['currency']}"
+                text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {state['currency']}"
             response = slack.chat_postMessage(channel='fitness-poker', text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
         else:
             text = f"Whoa - we had a tie: " + " and ".join([f"<@{state['handles'][player]}>" for player in winners]) + " can take a break"
             for player in [player for player in state['players'] if player not in winners]:
-                text += f"\n- <@{state['handles'][player]}> ({player}) owes {state['bets'][player]} {state['currency']}"
+                text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {state['currency']}"
             response = slack.chat_postMessage(channel='fitness-poker', text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
 
         
