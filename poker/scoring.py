@@ -2,7 +2,7 @@ import itertools
 
 from collections import defaultdict
 
-from poker.cards import cards
+from poker.structures import cards
 
 ####################### Helpers #######################
 
@@ -168,11 +168,9 @@ def best(hand):
 
   assert False
 
-# This literally takes a minute
-def test():
-  # Hacky thing so I can just use standard string sorting to enumerate hands according
-  # to their rank (relative to one another)
-  ord_lexico = {
+ord_lexico = {
+    0:  '0',
+    1:  '1',
     2:  '2',
     3:  '3',
     4:  '4', 
@@ -186,8 +184,11 @@ def test():
     12:  'C',
     13:  'D',
     14:  'E'
-  }
+}
 
+
+# This literally takes a minute
+def test():
   hand_count   = defaultdict(lambda: 0)
   hands_actual = defaultdict(lambda: [])
 
