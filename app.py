@@ -3,7 +3,7 @@ import logging
 import os
 import random
 import itertools
-import pprint
+import time
 
 from flask import Flask, request
 from slack_bolt import App
@@ -390,6 +390,7 @@ def advance_play(conn, payload, state):
             state['current_player']   = state['players'][next_player_idx]
             payload['player'] = state['current_player']
             blocks = get_bet_blocks(payload)
+            time.sleep(2)
             response = slack.chat_postEphemeral(channel='awesomeness', thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
         else:
             if phase == 'opening':
@@ -464,7 +465,7 @@ def finish_game(conn, payload, state):
 
     if len(active) == 1:
         winner = active[0]
-        text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> ({player}) - you won!"
+        text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> ({winner}) - you won!"
         for player in folded:
             text += f"\n- <@{state['handles'][player]}> ({player}) owes {state['bets'][player]} {state['currency']}"
         response = slack.chat_postMessage(channel='awesomeness', text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
