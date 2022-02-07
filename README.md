@@ -9,4 +9,4 @@ and should be easy to run outside of Heroku.
 ![Poker app](http://slack-fitness-poker.herokuapp.com/static/readme.png)
 
 The game always consists of 4 players. One player initiates via `/game` and the first three people
-in the channel to react to the invitation message join the game. Order of play is random
+in the channel to react to the invitation message join the game. Multiple games can be played simultaneously. Order of play is random.
