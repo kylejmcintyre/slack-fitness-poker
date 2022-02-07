@@ -55,6 +55,11 @@ cards = [
   {"suit": "Clubs",    "name": "Ace",   "ordinal": 14},
 ]
 
+def card_image_name(card):
+    defn = cards[card]
+
+    return defn['name'].lower() + "_of_" + defn['suit'].lower() + ".png"
+
 assert len([c for c in cards if c['suit'] == "Clubs"]) == 13
 assert len([c for c in cards if c['suit'] == "Diamonds"]) == 13
 assert len([c for c in cards if c['suit'] == "Hearts"]) == 13
