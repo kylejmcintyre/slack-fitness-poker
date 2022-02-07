@@ -21,7 +21,7 @@ def maybe_add_player(slack, game_id, user, logger):
 
     if state:
         if state['status'] == 'pending':
-            if user not in state['players'] or True: # TODO dev hack
+            if user not in state['players']: # TODO dev hack
                 logger.info('Adding player ' + user)
                 state['players'].append(user)
 
@@ -38,7 +38,7 @@ def maybe_add_player(slack, game_id, user, logger):
 def start_game(slack, conn, game_id, state):
 
     # TODO dev hack
-    state['players'] = ['player1', 'player2', 'player3', 'player4']
+    #state['players'] = ['player1', 'player2', 'player3', 'player4']
     state['handles'] = {player: state['host'] for player in state['players']}
 
     random.shuffle(state['players'])
