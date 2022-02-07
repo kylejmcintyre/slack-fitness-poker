@@ -181,9 +181,9 @@ def double(slack, user, name, payload):
     conn = db.get_conn()
     state = db.load_game(conn, payload['game_id'])
 
-    state['current_bet'] = state['current_bet'] + state['buyin']
+    state['current_bet'] = state['current_bet'] + (state['buyin'] * 2)
 
-    state['bets'][payload['player']] = state['current_bet'] * 2
+    state['bets'][payload['player']] = state['current_bet']
 
     response = slack.chat_postMessage(channel='fitness-poker', text=f"{payload['player']} raises {state['buyin'] * 2}", thread_ts=payload['thread_ts'])
 
