@@ -17,6 +17,7 @@ import poker.engine as engine
 logging.basicConfig(level=logging.DEBUG)
 
 token = os.environ.get("SLACK_BOT_TOKEN")
+channel = os.environ.get("SLACK_CHANNEL")
 
 app = Flask(__name__, static_url_path='/static')
 bolt = App()
@@ -57,7 +58,7 @@ def poker_cmd(ack, respond, command, logger):
         respond(response_type="ephemeral", text="I didn't get that. Try something like `/poker pushups 5`")
         return
 
-    response = slack.chat_postMessage(channel='fitness-poker', text=f"<@{user}> wants to play {currencies[currency]['singular']} poker 💪. The buy-in is {buyin} {currency}. Who's in?")
+    response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {currencies[currency]['singular']} poker 💪. The buy-in is {buyin} {currency}. Who's in?")
 
     game_id = f"{response['channel']}-{response['ts']}"
 
