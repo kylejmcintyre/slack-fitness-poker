@@ -9,7 +9,7 @@ from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 from slack_sdk import WebClient
 
-from poker.structures import currency_map, currencies, cards
+from poker.structures import leagues
 
 import poker.db as db
 import poker.engine as engine
@@ -31,34 +31,38 @@ def slack_events():
 
 @app.route("/")
 def index():
-    return {'cards': cards}
+    return {}
 
 @bolt.command("/game")
 def poker_cmd(ack, respond, command, logger):
     ack()
 
     user = command['user_id']
-    cmd  = command['text'] if 'text' in command else 'pushups 5'
+    cmd  = command['text'] if 'text' in command else ''
     pieces = cmd.split()
 
-    if len(pieces) != 2:
-        respond(response_type="ephemeral", text="I didn't get that. Try something like `/poker pushups 5`")
+    if len(pieces) != 1:
+        respond(response_type="ephemeral", text="Which league do you want to play in? Try something like `/poker [{"|".join(leagues.keys())}]`")
         return
 
-    currency = pieces[0]
-    buyin    = pieces[1]
+    league_in = pieces[0]
+    buyin     = pieces[1]
 
-    if currency.lower() not in currency_map:
-        respond(response_type="ephemeral", text=f"I don't know this '{currency}' you speak of. Try one of these: " + ", ".join(set(currency_map.values())))
+    league = None
+
+    for name, data in leagues.items():
+        if league_in == name or league_in in data['synonyms']:
+            league = name
+            break
+
+    if league is None:
+        respond(response_type="ephemeral", text=f"I don't know this '{league_in}' you speak of. Try one of these: " + ", ".join(set(leagues.keys())))
         return
 
-    currency = currency_map[currency]
+    buyin = data['buyin']
+    units = data['units']
 
-    if not buyin.isnumeric():
-        respond(response_type="ephemeral", text="I didn't get that. Try something like `/poker pushups 5`")
-        return
-
-    response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {currencies[currency]['singular']} poker 💪. The buy-in is {buyin} {currency}. Who's in?")
+    response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league} poker 💪. The buy-in is {buyin} {units}. Who's in?")
 
     game_id = f"{response['channel']}-{response['ts']}"
 
@@ -66,7 +70,7 @@ def poker_cmd(ack, respond, command, logger):
 
     state = {
       'host': user,
-      'currency': currency,
+      'league': league,
       'buyin': int(buyin),
       'status': 'pending',
       'players': [user],

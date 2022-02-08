@@ -75,29 +75,41 @@ for c in cards:
 for key, value in ord_counts.items():
   assert value == 4
 
-currencies = {
-  "push-ups": {
-    "singular": "push-up",
+leagues = {
+  "push-up": {
+    "fitness": True,
+    "units": "push-ups",
+    "buyin": 5,
+    "synonyms": ["pushup", "pushups", "push-ups"]
   },
-  "sit-ups": {
-    "singular": "sit-up",
+  "sit-up": {
+    "fitness": True,
+    "units": "sit-ups",
+    "buyin": 5,
+    "synonyms": ["situp", "situps", "sit-ups"]
   },
-  "burpees": {
-    "singular": "burpee",
+  "burpee": {
+    "fitness": True,
+    "units": "burpees",
+    "buyin": 5,
+    "synonyms": ["burpees"]
   },
+  "squat": {
+    "fitness": True,
+    "units": "squats",
+    "buyin": 5,
+    "synonyms": ["squats"]
+  },
+  "plank": {
+    "fitness": True,
+    "units": "seconds",
+    "buyin": 10,
+    "synonyms": ["planks", "planking"]
+  },
+  "rupee": {
+    "fitness": False,
+    "units": "rupees",
+    "buyin": 5,
+    "synonyms": ["rupees"]
+  }
 }
-
-currency_map = {
-  'push-up': 'push-ups',
-  'pushup': 'push-ups',
-  'pushups': 'push-ups',
-  'push-ups': 'push-ups',
-  'situp': 'sit-ups',
-  'sit-up': 'sit-ups',
-  'situps': 'sit-ups',
-  'sit-ups': 'sit-ups',
-  'burpees': 'sit-ups',
-  'burpee': 'burpees',
-}
-
-

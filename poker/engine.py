@@ -8,7 +8,7 @@ import time
 site = os.environ.get("SITE_URL")
 channel = os.environ.get("SLACK_CHANNEL")
 
-from poker.structures import currency_map, currencies, cards, card_image_name
+from poker.structures import leagues, cards, card_image_name
 
 import poker.db as db
 import poker.scoring as scoring
@@ -361,7 +361,7 @@ def finish_game(slack, conn, payload, state):
         winner = active[0]
         text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> ({winner}) - you won!"
         for player in folded:
-            text += f"\n- <@{state['handles'][player]}> ({player}) owes {state['bets'][player]} {state['currency']}"
+            text += f"\n- <@{state['handles'][player]}> ({player}) owes {state['bets'][player]} {leagues[state['league']]['units']}"
         response = slack.chat_postMessage(channel=channel, text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
     else:
 
@@ -393,12 +393,12 @@ def finish_game(slack, conn, payload, state):
             winner = list(winners)[0]
             text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> - you won with a {scoring.hands[int(results[0]['lex'][0])]['name']}"
             for player in [player for player in state['players'] if player != winner]:
-                text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {state['currency']}"
+                text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {leagues[state['league']]['units']}"
             response = slack.chat_postMessage(channel=channel, text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
         else:
             text = f"Whoa - we had a tie: " + " and ".join([f"<@{state['handles'][player]}>" for player in winners]) + " can take a break"
             for player in [player for player in state['players'] if player not in winners]:
-                text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {state['currency']}"
+                text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {leagues[state['league']]['units']}"
             response = slack.chat_postMessage(channel=channel, text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
 
         
