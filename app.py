@@ -51,8 +51,8 @@ def poker_cmd(ack, respond, command, logger):
 
     league = None
 
-    for name, data in leagues.items():
-        if league_in == name or league_in in data['synonyms']:
+    for name, league_data in leagues.items():
+        if league_in == name or league_in in league_data['synonyms']:
             league = name
             break
 
@@ -60,10 +60,10 @@ def poker_cmd(ack, respond, command, logger):
         respond(response_type="ephemeral", text=f"I don't know this '{league_in}' you speak of. Try one of these: " + ", ".join(list(leagues.keys())))
         return
 
-    buyin = data['buyin']
-    units = data['units']
+    buyin = league_data['buyin']
+    units = league_data['units']
 
-    if league['fitness']:
+    if league_data['fitness']:
         emoji = "💪"
     else:
         emoji = "💎"
