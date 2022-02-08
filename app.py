@@ -42,7 +42,7 @@ def poker_cmd(ack, respond, command, logger):
     pieces = cmd.split()
 
     if len(pieces) != 1:
-        respond(response_type="ephemeral", text="Which league do you want to play in? Try something like `/poker [{"|".join(leagues.keys())}]`")
+        respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/poker [{"|".join(leagues.keys())}]`")
         return
 
     league_in = pieces[0]
