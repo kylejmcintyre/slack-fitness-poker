@@ -41,8 +41,10 @@ def poker_cmd(ack, respond, command, logger):
     cmd  = command['text'] if 'text' in command else ''
     pieces = cmd.split()
 
+
     if len(pieces) != 1:
-        respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/poker [{"|".join(leagues.keys())}]`")
+        league_opts = "|".join(list(leagues.keys()))
+        respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/poker [{league_opts}]`")
         return
 
     league_in = pieces[0]
@@ -56,7 +58,7 @@ def poker_cmd(ack, respond, command, logger):
             break
 
     if league is None:
-        respond(response_type="ephemeral", text=f"I don't know this '{league_in}' you speak of. Try one of these: " + ", ".join(set(leagues.keys())))
+        respond(response_type="ephemeral", text=f"I don't know this '{league_in}' you speak of. Try one of these: " + ", ".join(list(leagues.keys())))
         return
 
     buyin = data['buyin']
