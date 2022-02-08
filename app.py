@@ -44,11 +44,10 @@ def poker_cmd(ack, respond, command, logger):
 
     if len(pieces) != 1:
         league_opts = "|".join(list(leagues.keys()))
-        respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/poker [{league_opts}]`")
+        respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/game [{league_opts}]`")
         return
 
     league_in = pieces[0]
-    buyin     = pieces[1]
 
     league = None
 
@@ -64,7 +63,12 @@ def poker_cmd(ack, respond, command, logger):
     buyin = data['buyin']
     units = data['units']
 
-    response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league} poker 💪. The buy-in is {buyin} {units}. Who's in?")
+    if league['fitness']:
+        emoji = "💪"
+    else:
+        emoji = "💎"
+   
+    response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league} poker {emoji} . The buy-in is {buyin} {units}. Who's in?")
 
     game_id = f"{response['channel']}-{response['ts']}"
 
