@@ -5,6 +5,7 @@ import random
 import itertools
 import time
 
+dev_mode = os.environ.get("DEV_MODE", None)
 site = os.environ.get("SITE_URL")
 channel = os.environ.get("SLACK_CHANNEL")
 
@@ -22,7 +23,7 @@ def maybe_add_player(slack, game_id, user, logger):
 
     if state:
         if state['status'] == 'pending':
-            if user not in state['players']: # TODO dev hack
+            if user not in state['players'] or dev_mode:
                 logger.info('Adding player ' + user)
                 state['players'].append(user)
 
@@ -38,9 +39,11 @@ def maybe_add_player(slack, game_id, user, logger):
 
 def start_game(slack, conn, game_id, state):
 
-    # TODO dev hack
-    #state['players'] = ['player1', 'player2', 'player3', 'player4']
-    state['handles'] = {player: player for player in state['players']}
+    if dev_mode:
+        state['players'] = ['player1', 'player2', 'player3', 'player4']
+        state['handles'] = {player: state['host'] for player in state['players']}
+    else:
+        state['handles'] = {player: player for player in state['players']}
 
     random.shuffle(state['players'])
 
