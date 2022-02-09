@@ -52,6 +52,8 @@ def start_game(slack, conn, game_id, state):
     order_msg = ", ".join([f"<@{state['handles'][player]}>" for player in state['players']])
     response = slack.chat_postMessage(channel=channel, text=f"Game on! The order of play is {order_msg}. I'll deal.", thread_ts=thread_ts)
 
+    time.sleep(0.1)
+
     deck = list(range(0, 52))
 
     random.shuffle(deck)
@@ -223,7 +225,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": f"Raise {state['buyin']} {units}" + f" +{state['buyin'] + diff}" if diff > 0 else ""
+                        "text": f"Raise {state['buyin']} {units}" + (f" +{state['buyin'] + diff}" if diff > 0 else "")
                     },
                     "value": payload,
                     "action_id": "raise"
@@ -232,7 +234,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": f"Raise {state['buyin'] * 2} {units}" + f" +{state['buyin'] * 2 + diff}" if diff > 0 else ""
+                        "text": f"Raise {state['buyin'] * 2} {units}" + (f" +{state['buyin'] * 2 + diff}" if diff > 0 else "")
                     },
                     "value": payload,
                     "action_id": "double"
