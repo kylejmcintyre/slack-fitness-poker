@@ -227,6 +227,8 @@ def get_bet_blocks(payload, state):
     else:
         community_cards = ''
 
+    your_cards = get_player_hand_text(state, target_player)
+
     payload = json.dumps(payload)
 
     blocks = [
