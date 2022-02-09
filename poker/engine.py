@@ -403,10 +403,19 @@ def finish_game(slack, conn, payload, state):
                 winners.add(res['player'])
             else:
                 break
+
+        community_cards = ", ".join([card_textual_rep(c) for c in state['flop'] + [state['turn']] + [state['river']]])
+
+        call_msg = f"Time for a showdown:\n- Community cards: {community_cards}"
+
+        for player in active:
+            call_msg += "\n- {player}: {get_player_hand_text(state, player)}"
+
+        response = slack.chat_postMessage(channel=channel, text=call_msg, thread_ts=payload['thread_ts'])
                 
         if len(winners) == 1:
             winner = list(winners)[0]
-            text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> - you won with a {scoring.hands[int(results[0]['lex'][0])]['name']} ({get_player_hand_text(state, winner)})"
+            text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> - you won with a {scoring.hands[int(results[0]['lex'][0])]['name']}"
             for player in [player for player in state['players'] if player != winner]:
                 text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {leagues[state['league']]['units']}"
             response = slack.chat_postMessage(channel=channel, text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)

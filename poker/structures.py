@@ -74,7 +74,7 @@ def card_textual_rep(card):
     elif defn['suit'] == 'Diamonds':
         emoji = "♦️"
 
-    return defn['name'][0] + emoji
+    return "**" + defn['name'][0] + "**" + emoji
 
 assert len([c for c in cards if c['suit'] == "Clubs"]) == 13
 assert len([c for c in cards if c['suit'] == "Diamonds"]) == 13
