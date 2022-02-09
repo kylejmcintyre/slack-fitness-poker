@@ -168,9 +168,11 @@ def check(slack, user, name, payload, logger):
     if payload['player'] not in state['player_labels']:
         state['player_labels'][payload['player']] = name
 
+    msg = "calls" if state['bets'][payload['player']] < state['current_bet'] else "checks"
+
     state['bets'][payload['player']] = state['current_bet']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} checks", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel=channel, text=f"{name} {msg}", thread_ts=payload['thread_ts'])
 
     logger.info(state) 
 
