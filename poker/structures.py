@@ -121,8 +121,14 @@ leagues = {
   "plank": {
     "fitness": True,
     "units": "seconds",
-    "buyin": 10,
+    "buyin": 15,
     "synonyms": ["planks", "planking"]
+  },
+  "knuckle-up": {
+    "fitness": True,
+    "units": "knuckle-ups",
+    "buyin": 5,
+    "synonyms": ["knuckleup", "knuckleups", "knuckle-ups"]
   },
   "rupee": {
     "fitness": False,
