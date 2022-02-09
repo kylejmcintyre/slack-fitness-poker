@@ -202,9 +202,9 @@ def double(slack, user, name, payload):
 
 def get_bet_blocks(payload, state):
     target_player = payload['player']
-    diff = state['bets'][target_player] < state['current_bet']
+    diff = state['current_bet'] - state['bets'][target_player]
 
-    units = leagues[state['league']]['units']
+    units = leagues[state['league']]['units'].capitalize()
 
     payload = json.dumps(payload)
     blocks = [
