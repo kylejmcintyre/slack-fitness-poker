@@ -136,6 +136,10 @@ def fold(slack, user, name, payload):
     conn = db.get_conn()
     state = db.load_game(conn, payload['game_id'])
 
+    if state['current_player'] != payload['player']:
+        conn.close()
+        return
+
     state['folded'].append(payload['player'])
 
     response = slack.chat_postMessage(channel=channel, text=f"{name} folds", thread_ts=payload['thread_ts'])
@@ -151,6 +155,10 @@ def check(slack, user, name, payload, logger):
 
     conn = db.get_conn()
     state = db.load_game(conn, payload['game_id'])
+
+    if state['current_player'] != payload['player']:
+        conn.close()
+        return
 
     state['bets'][payload['player']] = state['current_bet']
 
@@ -172,6 +180,10 @@ def single(slack, user, name, payload):
     conn = db.get_conn()
     state = db.load_game(conn, payload['game_id'])
 
+    if state['current_player'] != payload['player']:
+        conn.close()
+        return
+
     state['current_bet'] = state['current_bet'] + state['buyin']
 
     state['bets'][payload['player']] = state['current_bet']
@@ -190,6 +202,10 @@ def double(slack, user, name, payload):
 
     conn = db.get_conn()
     state = db.load_game(conn, payload['game_id'])
+
+    if state['current_player'] != payload['player']:
+        conn.close()
+        return
 
     state['current_bet'] = state['current_bet'] + (state['buyin'] * 2)
 
