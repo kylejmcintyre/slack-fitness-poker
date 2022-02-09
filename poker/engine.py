@@ -431,7 +431,7 @@ def finish_game(slack, conn, payload, state):
         winner = active[0]
         text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> ({winner}) - you won!"
         for player in folded:
-            text += f"\n- <@{state['handles'][player]}> ({player}) owes {state['bets'][player]} {leagues[state['league']]['units']}"
+            text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {leagues[state['league']]['units']}"
         response = slack.chat_postMessage(channel=channel, text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
     else:
 
