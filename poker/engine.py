@@ -17,7 +17,7 @@ import poker.scoring as scoring
 logging.basicConfig(level=logging.DEBUG)
 
 def get_player_hand_text(state, player):
-    return ", ".join([card_textual_rep(c) for c in state['hands'][player]])
+    return "  ".join([card_textual_rep(c) for c in state['hands'][player]])
 
 def maybe_add_player(slack, game_id, user, logger):
     conn = db.get_conn()
@@ -239,7 +239,7 @@ def get_bet_blocks(payload, state):
         visible_community_cards += [state['river']]
 
     if len(visible_community_cards) > 0:        
-        community_cards = "\nCommunity cards: " + ", ".join([card_textual_rep(c) for c in visible_community_cards])
+        community_cards = "\nCommunity cards: " + "  ".join([card_textual_rep(c) for c in visible_community_cards])
     else:
         community_cards = ''
 
@@ -447,7 +447,7 @@ def finish_game(slack, conn, payload, state):
             else:
                 break
 
-        community_cards = ", ".join([card_textual_rep(c) for c in state['flop'] + [state['turn']] + [state['river']]])
+        community_cards = "  ".join([card_textual_rep(c) for c in state['flop'] + [state['turn']] + [state['river']]])
 
         call_msg = f"Time for a showdown:\n • Community cards: {community_cards}"
 
