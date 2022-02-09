@@ -199,6 +199,11 @@ def double(slack, user, name, payload):
     conn.close()
 
 def get_bet_blocks(payload, state):
+    target_player = payload['player']
+    diff = state['bets'][target_player] < state['current_bet']
+
+    units = leagues[state['league']]['units']
+
     payload = json.dumps(payload)
     blocks = [
         {
@@ -209,7 +214,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": "Check"
+                        "text": "Check" if diff == 0 else f"Call (+{diff} {units})"
                     },
                     "value": payload,
                     "action_id": "check"
@@ -218,7 +223,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": f"Raise {state['buyin']}"
+                        "text": f"Raise {state['buyin']} {units}" + f" +{state['buyin'] + diff}" if diff > 0 else ""
                     },
                     "value": payload,
                     "action_id": "raise"
@@ -227,7 +232,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": f"Raise {state['buyin'] * 2}"
+                        "text": f"Raise {state['buyin'] * 2} {units}" + f" +{state['buyin'] * 2 + diff}" if diff > 0 else ""
                     },
                     "value": payload,
                     "action_id": "double"
