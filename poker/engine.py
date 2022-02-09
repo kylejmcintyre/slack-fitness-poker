@@ -101,6 +101,8 @@ def start_game(slack, conn, game_id, state):
 
     state['current_bet'] = state['buyin']
 
+    state['player_labels'] = {}
+
     state['opening-bets-complete'] = False
     state['opening-bets-idx'] = -1
     state['opening-bets-round-trip'] = False
@@ -140,6 +142,9 @@ def fold(slack, user, name, payload):
         conn.close()
         return
 
+    if payload['player'] not in state['player_labels']:
+        state['player_labels'][payload['player']] = name
+
     state['folded'].append(payload['player'])
 
     response = slack.chat_postMessage(channel=channel, text=f"{name} folds", thread_ts=payload['thread_ts'])
@@ -160,6 +165,9 @@ def check(slack, user, name, payload, logger):
         conn.close()
         return
 
+    if payload['player'] not in state['player_labels']:
+        state['player_labels'][payload['player']] = name
+
     state['bets'][payload['player']] = state['current_bet']
 
     response = slack.chat_postMessage(channel=channel, text=f"{name} checks", thread_ts=payload['thread_ts'])
@@ -168,8 +176,6 @@ def check(slack, user, name, payload, logger):
 
     advance_play(slack, conn, payload, state)
     
-    logger.info(state) 
-
     db.save_game(conn, payload['game_id'], state)
 
     conn.commit()
@@ -183,6 +189,9 @@ def single(slack, user, name, payload):
     if state['current_player'] != payload['player']:
         conn.close()
         return
+
+    if payload['player'] not in state['player_labels']:
+        state['player_labels'][payload['player']] = name
 
     state['current_bet'] = state['current_bet'] + state['buyin']
 
@@ -206,6 +215,9 @@ def double(slack, user, name, payload):
     if state['current_player'] != payload['player']:
         conn.close()
         return
+
+    if payload['player'] not in state['player_labels']:
+        state['player_labels'][payload['player']] = name
 
     state['current_bet'] = state['current_bet'] + (state['buyin'] * 2)
 
@@ -452,11 +464,14 @@ def finish_game(slack, conn, payload, state):
         call_msg = f"Time for a showdown:\n • Community cards: {community_cards}"
 
         for player in active:
-            call_msg += f"\n • {player}: {get_player_hand_text(state, player)}"
+            label = state['player_labels'][player] if player in state['player_labels'] else player
+            call_msg += f"\n • {label}: {get_player_hand_text(state, player)}"
 
         response = slack.chat_postMessage(channel=channel, text=call_msg, thread_ts=payload['thread_ts'])
 
         winning_hand = scoring.hands[int(results[0]['lex'][0])]['name']
+
+        state['winners'] = winners
                 
         if len(winners) == 1:
             winner = list(winners)[0]
@@ -470,4 +485,3 @@ def finish_game(slack, conn, payload, state):
                 text += f"\n • <@{state['handles'][player]}> owes {state['bets'][player]} {leagues[state['league']]['units']}"
             response = slack.chat_postMessage(channel=channel, text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)
 
-        
