@@ -235,7 +235,7 @@ def get_bet_blocks(payload, state):
 	{
 		"type": "section",
 		"text": {
-			"type": "plain_text",
+			"type": "mrkdwn",
 			"text": f"Your cards: {your_cards}{community_cards}"
 		}
 	},
