@@ -110,6 +110,8 @@ def handle_fold_action(ack, respond, body, logger):
 def handle_check_action(ack, respond, body, logger):
     ack()
 
+    logger.info(body)
+
     respond(delete_original=True)
 
     engine.check(slack, body['user']['id'], body['user']['name'], json.loads(body['actions'][0]['value']), logger)
