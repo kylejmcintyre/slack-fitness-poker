@@ -232,17 +232,18 @@ def get_bet_blocks(payload, state):
     payload = json.dumps(payload)
 
     blocks = [
+	{
+		"type": "section",
+		"text": {
+			"type": "plain_text",
+			"text": f"Your cards: {your_cards}{community_cards}"
+		}
+	},
         {
             "type": "actions",
             "block_id": "actions1",
             "elements": [
-		{
-			"type": "section",
-			"text": {
-				"type": "plain_text",
-				"text": f"Your cards: {your_cards}{community_cards}"
-			}
-		},
+
                 {
                     "type": "button",
                     "text": {
