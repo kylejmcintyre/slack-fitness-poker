@@ -9,12 +9,15 @@ dev_mode = os.environ.get("DEV_MODE", None)
 site = os.environ.get("SITE_URL")
 channel = os.environ.get("SLACK_CHANNEL")
 
-from poker.structures import leagues, cards, card_image_name
+from poker.structures import leagues, cards, card_image_name, card_textual_rep
 
 import poker.db as db
 import poker.scoring as scoring
 
 logging.basicConfig(level=logging.DEBUG)
+
+def get_player_hand_text(state, player):
+    return ", ".join([card_textual_rep(c) for c in state['hands'][player]])
 
 def maybe_add_player(slack, game_id, user, logger):
     conn = db.get_conn()
@@ -174,7 +177,7 @@ def single(slack, user, name, payload):
     state['bets'][payload['player']] = state['current_bet']
     units = leagues[state['league']]['units']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin']}, bringing the total to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin']}, bringing the total bet to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
 
     advance_play(slack, conn, payload, state)
 
@@ -403,7 +406,7 @@ def finish_game(slack, conn, payload, state):
                 
         if len(winners) == 1:
             winner = list(winners)[0]
-            text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> - you won with a {scoring.hands[int(results[0]['lex'][0])]['name']}"
+            text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> - you won with a {scoring.hands[int(results[0]['lex'][0])]['name']} ({get_player_hand_text(state, winner)})"
             for player in [player for player in state['players'] if player != winner]:
                 text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {leagues[state['league']]['units']}"
             response = slack.chat_postMessage(channel=channel, text=text, thread_ts=payload['thread_ts'], reply_broadcast=True)

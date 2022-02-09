@@ -60,6 +60,22 @@ def card_image_name(card):
 
     return defn['name'].lower() + "_of_" + defn['suit'].lower() + ".png"
 
+def card_textual_rep(card):
+    defn = cards[card]
+
+    emoji = None
+
+    if defn['suit'] == 'Clubs':
+        emoji = "♣️"
+    elif defn['suit'] == 'Spades':
+        emoji = "♠️"
+    elif defn['suit'] == 'Hearts':
+        emoji = "♥️"
+    elif defn['suit'] == 'Diamonds':
+        emoji = "♦️"
+
+    return defn['name'][0] + emoji
+
 assert len([c for c in cards if c['suit'] == "Clubs"]) == 13
 assert len([c for c in cards if c['suit'] == "Diamonds"]) == 13
 assert len([c for c in cards if c['suit'] == "Hearts"]) == 13
