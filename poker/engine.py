@@ -172,8 +172,9 @@ def single(slack, user, name, payload):
     state['current_bet'] = state['current_bet'] + state['buyin']
 
     state['bets'][payload['player']] = state['current_bet']
+    units = leagues[state['league']]['units']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin']}", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin']}, bringing the total to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
 
     advance_play(slack, conn, payload, state)
 
@@ -190,8 +191,9 @@ def double(slack, user, name, payload):
     state['current_bet'] = state['current_bet'] + (state['buyin'] * 2)
 
     state['bets'][payload['player']] = state['current_bet']
+    units = leagues[state['league']]['units']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin'] * 2}", thread_ts=payload['thread_ts'])
+    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin'] * 2}, bringing the total to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
 
     advance_play(slack, conn, payload, state)
 
@@ -225,7 +227,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": f"Raise {state['buyin']} {units}" + (f" +{state['buyin'] + diff}" if diff > 0 else "")
+                        "text": f"Raise {state['buyin']} {units}" + (f" (+{state['buyin'] + diff})" if diff > 0 else "")
                     },
                     "value": payload,
                     "action_id": "raise"
@@ -234,7 +236,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": f"Raise {state['buyin'] * 2} {units}" + (f" +{state['buyin'] * 2 + diff}" if diff > 0 else "")
+                        "text": f"Raise {state['buyin'] * 2} {units}" + (f" (+{state['buyin'] * 2 + diff)}" if diff > 0 else "")
                     },
                     "value": payload,
                     "action_id": "double"
