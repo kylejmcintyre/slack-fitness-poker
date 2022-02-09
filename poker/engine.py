@@ -236,7 +236,7 @@ def get_bet_blocks(payload, state):
                     "type": "button",
                     "text": {
                         "type": "plain_text",
-                        "text": f"Raise {state['buyin'] * 2} {units}" + (f" (+{state['buyin'] * 2 + diff)}" if diff > 0 else "")
+                        "text": f"Raise {state['buyin'] * 2} {units}" + (f" (+{state['buyin'] * 2 + diff})" if diff > 0 else "")
                     },
                     "value": payload,
                     "action_id": "double"
