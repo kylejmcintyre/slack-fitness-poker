@@ -14,6 +14,9 @@ def is_flush(hand):
 
 def is_straight(hand):
   ords = sorted([cards[c]['ordinal'] for c in hand])
+  if ords == [2, 3, 4, 5, 14]:
+    # special case - the "wheel" straight where Ace is low
+    return true
 
   return ords == list(range(min(ords), max(ords) + 1))
 
