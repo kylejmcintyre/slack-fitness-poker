@@ -131,3 +131,11 @@ def handle_double_action(ack, respond, body, logger):
     respond(delete_original=True)
 
     engine.double(slack, body['user']['id'], body['user']['name'], json.loads(body['actions'][0]['value']))
+
+@bolt.action("triple")
+def handle_triple_action(ack, respond, body, logger):
+    ack()
+
+    respond(delete_original=True)
+
+    engine.triple(slack, body['user']['id'], body['user']['name'], json.loads(body['actions'][0]['value']))

@@ -235,6 +235,33 @@ def double(slack, user, name, payload):
     conn.commit()
     conn.close()
 
+def triple(slack, user, name, payload):
+
+    conn = db.get_conn()
+    state = db.load_game(conn, payload['game_id'])
+
+    if state['current_player'] != payload['player']:
+        conn.close()
+        return
+
+    if payload['player'] not in state['player_labels']:
+        state['player_labels'][payload['player']] = name
+
+    state['current_bet'] = state['current_bet'] + (state['buyin'] * 3)
+
+    state['bets'][payload['player']] = state['current_bet']
+    units = leagues[state['league']]['units']
+
+    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin'] * 3}, bringing the total to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
+
+    advance_play(slack, conn, payload, state)
+
+    db.save_game(conn, payload['game_id'], state)
+
+    conn.commit()
+    conn.close()
+
+
 def get_bet_blocks(payload, state):
     target_player = payload['player']
     diff = state['current_bet'] - state['bets'][target_player]
@@ -300,6 +327,15 @@ def get_bet_blocks(payload, state):
                     },
                     "value": payload,
                     "action_id": "double"
+                },
+                {
+                    "type": "button",
+                    "text": {
+                        "type": "plain_text",
+                        "text": f"Raise {state['buyin'] * 3} {units}" + (f" (+{state['buyin'] * 3 + diff})" if diff > 0 else "")
+                    },
+                    "value": payload,
+                    "action_id": "triple"
                 },
                 {
                     "type": "button",
