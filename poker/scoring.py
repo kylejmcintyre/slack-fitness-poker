@@ -93,6 +93,11 @@ def flush(hand):
 def straight(hand):
 
   if is_straight(hand):
+    ords = to_ords(hand)
+    if min(ords) == 2 and max(ords) == 14:
+      # wheel straight
+      return (True, 5)
+
     return (True, [max_ordinal(hand)])
 
   return (False, [])
