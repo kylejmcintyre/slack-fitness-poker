@@ -16,7 +16,7 @@ def is_straight(hand):
   ords = sorted([cards[c]['ordinal'] for c in hand])
   if ords == [2, 3, 4, 5, 14]:
     # special case - the "wheel" straight where Ace is low
-    return true
+    return True
 
   return ords == list(range(min(ords), max(ords) + 1))
 
@@ -96,7 +96,7 @@ def straight(hand):
     ords = to_ords(hand)
     if min(ords) == 2 and max(ords) == 14:
       # wheel straight
-      return (True, 5)
+      return (True, [5])
 
     return (True, [max_ordinal(hand)])
 
@@ -218,15 +218,15 @@ def test():
   print(counter)
 
   assert hand_count[9] == 4
-  assert hand_count[8] == 32
+  assert hand_count[8] == 36
   assert hand_count[7] == 624
   assert hand_count[6] == 3744
-  assert hand_count[5] == 5112
-  assert hand_count[4] == 9180
+  assert hand_count[5] == 5108
+  assert hand_count[4] == 10200
   assert hand_count[3] == 54912
   assert hand_count[2] == 123552
   assert hand_count[1] == 1098240
-  assert hand_count[0] == 1303560
+  assert hand_count[0] == 1302540
 
   for hand, actuals in hands_actual.items():
     actuals.sort(key=lambda x: x[1])
