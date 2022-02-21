@@ -280,7 +280,7 @@ def get_bet_blocks(payload, state):
         visible_community_cards += [state['river']]
 
     if len(visible_community_cards) > 0:        
-        community_cards = "\n<@{state['handles'][payload['player']]}> - community cards: " + "  ".join([card_textual_rep(c) for c in visible_community_cards])
+        community_cards = "\nCommunity cards: " + "  ".join([card_textual_rep(c) for c in visible_community_cards])
     else:
         community_cards = ''
 
@@ -293,7 +293,7 @@ def get_bet_blocks(payload, state):
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": f"Your cards: {your_cards}{community_cards}"
+			"text": f"Your bet <@{state['handles'][payload['player']]}>: {your_cards}{community_cards}"
 		}
 	},
         {
