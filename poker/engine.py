@@ -293,7 +293,7 @@ def get_bet_blocks(payload, state):
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": f"Your bet <@{state['handles'][payload['player']]}>: {your_cards}{community_cards}"
+			"text": f"Your bet <@{state['handles'][target_player]}>: {your_cards}{community_cards}"
 		}
 	},
         {
