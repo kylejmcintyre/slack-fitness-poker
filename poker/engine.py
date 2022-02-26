@@ -48,6 +48,8 @@ def start_game(slack, conn, game_id, state):
     else:
         state['handles'] = {player: player for player in state['players']}
 
+    state['dev_mode'] = dev_mode
+
     random.shuffle(state['players'])
 
     thread_ts = game_id.split("-")[1]
@@ -129,7 +131,7 @@ def start_game(slack, conn, game_id, state):
       'game_id': game_id
     }
 
-    advance_play(slack, conn, payload, state)
+    advance_play(slack, conn, payload, state, None)
     
     db.save_game(conn, game_id, state)
 
@@ -147,9 +149,9 @@ def fold(slack, user, name, payload):
 
     state['folded'].append(payload['player'])
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} folds", thread_ts=payload['thread_ts'])
+    msg = f"{name} folds."
 
-    advance_play(slack, conn, payload, state)
+    advance_play(slack, conn, payload, state, msg)
 
     db.save_game(conn, payload['game_id'], state)
 
@@ -169,14 +171,13 @@ def check(slack, user, name, payload, logger):
         state['player_labels'][payload['player']] = name
 
     msg = "calls" if state['bets'][payload['player']] < state['current_bet'] else "checks"
+    msg = f"{name} {msg}."
 
     state['bets'][payload['player']] = state['current_bet']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} {msg}", thread_ts=payload['thread_ts'])
-
     logger.info(state) 
 
-    advance_play(slack, conn, payload, state)
+    advance_play(slack, conn, payload, state, msg)
     
     db.save_game(conn, payload['game_id'], state)
 
@@ -200,9 +201,9 @@ def single(slack, user, name, payload):
     state['bets'][payload['player']] = state['current_bet']
     units = leagues[state['league']]['units']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin']}, bringing the total bet to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
+    msg = f"{name} raises {state['buyin']}, bringing the total bet to {state['current_bet']} {units}."
 
-    advance_play(slack, conn, payload, state)
+    advance_play(slack, conn, payload, state, msg)
 
     db.save_game(conn, payload['game_id'], state)
 
@@ -226,9 +227,9 @@ def double(slack, user, name, payload):
     state['bets'][payload['player']] = state['current_bet']
     units = leagues[state['league']]['units']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin'] * 2}, bringing the total to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
+    msg = f"{name} raises {state['buyin'] * 2}, bringing the total to {state['current_bet']} {units}."
 
-    advance_play(slack, conn, payload, state)
+    advance_play(slack, conn, payload, state, msg)
 
     db.save_game(conn, payload['game_id'], state)
 
@@ -252,9 +253,9 @@ def triple(slack, user, name, payload):
     state['bets'][payload['player']] = state['current_bet']
     units = leagues[state['league']]['units']
 
-    response = slack.chat_postMessage(channel=channel, text=f"{name} raises {state['buyin'] * 3}, bringing the total to {state['current_bet']} {units}", thread_ts=payload['thread_ts'])
+    msg = f"{name} raises {state['buyin'] * 3}, bringing the total to {state['current_bet']} {units}."
 
-    advance_play(slack, conn, payload, state)
+    advance_play(slack, conn, payload, state, msg)
 
     db.save_game(conn, payload['game_id'], state)
 
@@ -293,7 +294,7 @@ def get_bet_blocks(payload, state):
 		"type": "section",
 		"text": {
 			"type": "mrkdwn",
-			"text": f"Your bet <@{state['handles'][target_player]}>: {your_cards}{community_cards}"
+			"text": f"Your bet: {your_cards}{community_cards}"
 		}
 	},
         {
@@ -352,7 +353,7 @@ def get_bet_blocks(payload, state):
 
     return blocks
 
-def advance_play(slack, conn, payload, state):
+def advance_play(slack, conn, payload, state, msg):
 
     if len(state['folded']) >= len(state['players']) - 1:
         finish_game(slack, conn, payload, state)
@@ -388,13 +389,25 @@ def advance_play(slack, conn, payload, state):
         outstanding_bet = state['bets'][state['players'][next_player_idx]] < state['current_bet']
 
         if outstanding_bet or not state[f'{phase}-bets-round-trip']:
+
             state[f'{phase}-bets-idx'] = next_player_idx
             state['current_player']   = state['players'][next_player_idx]
             payload['player'] = state['current_player']
             blocks = get_bet_blocks(payload, state)
             time.sleep(2)
+
+            handle = state['handles'][state['current_player']]
+
+            if msg:
+                slack.chat_postMessage(channel=channel, text=msg + f" The bet is to <@{handle}>", thread_ts=payload['thread_ts'])
+            else: 
+                slack.chat_postMessage(channel=channel, text=f"The bet is to <@{handle}>", thread_ts=payload['thread_ts'])
+
             response = slack.chat_postEphemeral(channel=channel, thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
         else:
+            if msg:
+                slack.chat_postMessage(channel=channel, text=msg, thread_ts=payload['thread_ts'])
+
             if phase == 'opening':
                 blocks = [
                     {
@@ -454,7 +467,7 @@ def advance_play(slack, conn, payload, state):
                
             state[f'{phase}-bets-complete'] = True
 
-            advance_play(slack, conn, payload, state)
+            advance_play(slack, conn, payload, state, None)
 
     else:
         finish_game(slack, conn, payload, state)
@@ -509,7 +522,7 @@ def finish_game(slack, conn, payload, state):
 
         winning_hand = scoring.hands[int(results[0]['lex'][0])]['name']
 
-        state['winners'] = winners
+        state['winners'] = list(winners)
                 
         if len(winners) == 1:
             winner = list(winners)[0]
