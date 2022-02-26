@@ -14,26 +14,37 @@ game_table_ddl = """
 
 db_url = os.environ.get("DATABASE_URL")
 
-def get_conn():
-    return psycopg2.connect(db_url)
+class Connection():
+    def __init__(self):
+        pass
 
-def load_game(conn, game_id):
-    query = f"SELECT state FROM game WHERE game_id = '{game_id}'"
-    cur = conn.cursor()
-    cur.execute(query)
-    rows = cur.fetchall()
+    def __enter__(self):
+        self.conn = psycopg2.connect(db_url)
+        return self
 
-    if len(rows) == 0:
-        return None
+    def __exit__(self, type, value, traceback):
+        self.conn.close()
 
-    return rows[0][0]
+    def load_game(self, game_id):
+        query = f"SELECT state FROM game WHERE game_id = '{game_id}' FOR UPDATE"
+        cur = self.conn.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+    
+        if len(rows) == 0:
+            return None
+    
+        return rows[0][0]
+    
+    def save_game(self, game_id, state):
+        state = json.dumps(state)
+        stmt = f"INSERT INTO game (game_id, state) VALUES ('{game_id}', %s) ON CONFLICT (game_id) DO UPDATE SET state = %s"
+    
+        with self.conn.cursor() as cur:
+            print(cur.execute(stmt, (state, state)))
 
-def save_game(conn, game_id, state):
-    state = json.dumps(state)
-    stmt = f"INSERT INTO game (game_id, state) VALUES ('{game_id}', %s) ON CONFLICT (game_id) DO UPDATE SET state = %s"
-
-    with conn.cursor() as cur:
-        print(cur.execute(stmt, (state, state)))
+    def commit(self):
+        self.conn.commit()
 
 def show_tables(conn):
     logger.info("SHOW TABLES ...")

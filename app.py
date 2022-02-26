@@ -10,8 +10,8 @@ from slack_bolt.adapter.flask import SlackRequestHandler
 from slack_sdk import WebClient
 
 from poker.structures import leagues
+from poker.db import Connection
 
-import poker.db as db
 import poker.engine as engine
 
 logging.basicConfig(level=logging.DEBUG)
@@ -48,17 +48,22 @@ def poker_cmd(ack, respond, command, logger):
         return
 
     league_in = pieces[0]
-
     league = None
 
-    for name, league_data in leagues.items():
-        if league_in == name or league_in in league_data['synonyms']:
-            league = name
-            break
+    if league_in.lower().strip() == 'random':
+        choices = list(leagues.keys())
+        league = random.choice(choices)
+    else:
+        for name, league_data in leagues.items():
+            if league_in == name or league_in in league_data['synonyms']:
+                league = name
+                break
 
     if league is None:
-        respond(response_type="ephemeral", text=f"I don't know this '{league_in}' you speak of. Try one of these: " + ", ".join(list(leagues.keys())))
+        respond(response_type="ephemeral", text=f"I don't know this '{league_in}' you speak of. Try one of these: " + ", ".join(list(leagues.keys())) + " or random")
         return
+
+    league_data = leagues[league]
 
     buyin = league_data['buyin']
     units = league_data['units']
@@ -67,8 +72,11 @@ def poker_cmd(ack, respond, command, logger):
         emoji = "💪"
     else:
         emoji = "💎"
-   
-    response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league} poker {emoji} . The buy-in is {buyin} {units}. Who's in?")
+  
+    if league_in.lower().strip() == 'random':
+        response = slack.chat_postMessage(channel=channel, text=f"<@{user}> rolled the 🎲 on a random game and the result is {league} poker {emoji}! The buy-in is {buyin} {units}. Who's in?")
+    else: 
+        response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league} poker {emoji} . The buy-in is {buyin} {units}. Who's in?")
 
     game_id = f"{response['channel']}-{response['ts']}"
 
@@ -82,10 +90,9 @@ def poker_cmd(ack, respond, command, logger):
       'players': [user],
     }
 
-    conn = db.get_conn()
-    db.save_game(conn, game_id, state)
-    conn.commit()
-    conn.close()
+    with Connection() as conn:
+        conn.save_game(game_id, state)
+        conn.commit()
 
 @bolt.event('reaction_added')
 def handle_reaction(event, logger):
