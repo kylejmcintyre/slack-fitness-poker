@@ -10,7 +10,11 @@ site = os.environ.get("SITE_URL")
 channel = os.environ.get("SLACK_CHANNEL")
 
 from poker.structures import leagues, cards, card_image_name, card_textual_rep
-from poker.db import Connection
+
+if dev_mode:
+    from poker.local_db import Connection
+else:
+    from poker.db import Connection
 import poker.scoring as scoring
 
 logging.basicConfig(level=logging.DEBUG)
@@ -63,13 +67,14 @@ def start_game(slack, conn, game_id, state):
     
     player_hands = {}
     player_bets = {}
-    
+
     for player in state['players']:
         card1 = deck.pop(0)
         card2 = deck.pop(0)
         player_hands[player] = [card1, card2]
         player_bets[player] = state['buyin']
-    
+
+        card_ids = ','.join([str(c) for c in player_hands[player]])
         blocks = [
             {
                "title": {
@@ -77,16 +82,11 @@ def start_game(slack, conn, game_id, state):
                   "text": f"Good luck (I say that to everyone)"
                 },
                 "type": "image",
-                "image_url": f"https://{site}/static/" + card_image_name(card1),
-                "alt_text": "A poker card"
-            },
-            {
-           
-                "type": "image",
-                "image_url": f"https://{site}/static/" + card_image_name(card2),
-                "alt_text": "A poker card"
+                "image_url": f"https://{site}/combined-cards.png?cards={card_ids}",
+                "alt_text": "Poker cards"
             }
         ]
+        print(json.dumps(blocks, indent=2))
 
         response = slack.chat_postEphemeral(channel=channel, thread_ts=thread_ts, blocks=blocks, user=state['handles'][player])
 
@@ -392,6 +392,7 @@ def advance_play(slack, conn, payload, state, msg):
                 slack.chat_postMessage(channel=channel, text=msg, thread_ts=payload['thread_ts'])
 
             if phase == 'opening':
+                flop_card_ids = ','.join([str(c) for c in state['flop']])
                 blocks = [
                     {
                        "title": {
@@ -399,25 +400,13 @@ def advance_play(slack, conn, payload, state, msg):
                           "text": f"Here's the flop!"
                         },
                         "type": "image",
-                        "image_url": f"https://{site}/static/" + card_image_name(state['flop'][0]),
-                        "alt_text": "A poker card"
-                    },
-                    {
-                   
-                        "type": "image",
-                        "image_url": f"https://{site}/static/" + card_image_name(state['flop'][1]),
-                        "alt_text": "A poker card"
-                    },
-                    {
-                   
-                        "type": "image",
-                        "image_url": f"https://{site}/static/" + card_image_name(state['flop'][2]),
-                        "alt_text": "A poker card"
+                        "image_url": f"https://{site}/combined-cards.png?cards={flop_card_ids}",
+                        "alt_text": "Poker cards"
                     }
                 ]
-    
+
                 response = slack.chat_postMessage(channel=channel, blocks=blocks, thread_ts=payload['thread_ts'])
-    
+
             elif phase == 'flop':
                 blocks = [
                     {
@@ -430,7 +419,7 @@ def advance_play(slack, conn, payload, state, msg):
                         "alt_text": "A poker card"
                     }
                 ]
-    
+
                 response = slack.chat_postMessage(channel=channel, blocks=blocks, thread_ts=payload['thread_ts'])
 
             elif phase == 'turn':
@@ -445,9 +434,9 @@ def advance_play(slack, conn, payload, state, msg):
                         "alt_text": "A poker card"
                     }
                 ]
-    
+
                 response = slack.chat_postMessage(channel=channel, blocks=blocks, thread_ts=payload['thread_ts'])
-               
+
             state[f'{phase}-bets-complete'] = True
 
             advance_play(slack, conn, payload, state, None)
