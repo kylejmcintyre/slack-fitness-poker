@@ -3,14 +3,23 @@ import logging
 import os
 import random
 import time
+import pathlib
 
-from flask import Flask, request
+from PIL import Image
+import io
+
+from flask import Flask, request, make_response
 from slack_bolt import App
 from slack_bolt.adapter.flask import SlackRequestHandler
 from slack_sdk import WebClient
 
-from poker.structures import leagues
-from poker.db import Connection
+from poker.structures import leagues, card_image_name
+
+dev_mode = os.environ.get("DEV_MODE", None)
+if dev_mode:
+    from poker.local_db import Connection
+else:
+    from poker.db import Connection
 
 import poker.engine as engine
 
@@ -18,6 +27,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 token = os.environ.get("SLACK_BOT_TOKEN")
 channel = os.environ.get("SLACK_CHANNEL")
+game_command = os.environ.get("GAME_COMMAND") or "game"
 
 app = Flask(__name__, static_url_path='/static')
 bolt = App()
@@ -33,7 +43,25 @@ def slack_events():
 def index():
     return {}
 
-@bolt.command("/game")
+@app.route("/combined-cards.png")
+def card_image():
+    # Only allow up to 7 cards to be combined
+    card_ids = [int(c) for c in request.args.get('cards').split(',')][:7]
+    card_paths = [f'./static/{card_image_name(i)}' for i in card_ids]
+    card_images = [Image.open(p) for p in card_paths]
+    new_width = sum([i.size[0] for i in card_images])
+    combined_img = Image.new('RGB', (new_width, card_images[0].size[1]))
+    for idx, img in enumerate(card_images):
+        combined_img.paste(img, (idx*img.size[0], 0))
+
+    imgbytes = io.BytesIO()
+    combined_img.save(imgbytes, format='png')
+
+    resp = make_response(imgbytes.getvalue())
+    resp.headers['Content-Type'] = 'image/png'
+    return resp
+
+@bolt.command(f"/{game_command}")
 def poker_cmd(ack, respond, command, logger):
     ack()
 

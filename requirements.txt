@@ -3,3 +3,4 @@ gunicorn
 requests
 Flask
 slack_bolt
+pillow
