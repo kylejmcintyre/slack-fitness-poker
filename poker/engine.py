@@ -154,7 +154,7 @@ def start_game(slack, conn, game_id, state):
     state['river-bets-idx'] = -1
     state['river-bets-round-trip'] = False
 
-    state['olded'] = []
+    state['folded'] = []
 
     state['status'] = 'in-progress'
 
