@@ -381,6 +381,8 @@ def advance_play(slack, conn, payload, state, msg):
             blocks = get_bet_blocks(payload, state)
             time.sleep(2)
 
+            handle = state['handles'][state['current_player']]
+
             if msg:
                 text = msg + f" The bet is to <@{handle}>"
             else:
