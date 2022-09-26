@@ -69,7 +69,7 @@ def poker_cmd(ack, respond, command, logger):
     ack()
 
     user = command['user_id']
-    cmd e= command['text'] if 'text' in command else ''
+    cmd = command['text'] if 'text' in command else ''
     pieces = cmd.split()
 
 
