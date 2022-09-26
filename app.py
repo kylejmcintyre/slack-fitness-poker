@@ -138,6 +138,12 @@ def handle_reaction(event, logger):
 
     engine.maybe_add_player(slack, game_id, event['user'], logger)
 
+@bolt.action("resend")
+def handle_fold_action(ack, respond, body, logger):
+    ack()
+
+    logger.info(body)
+
 @bolt.action("fold")
 def handle_fold_action(ack, respond, body, logger):
     ack()
