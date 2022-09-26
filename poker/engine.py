@@ -88,7 +88,7 @@ def start_game(slack, conn, game_id, state):
       ]
     }
 
-    logger.info(json.dumps(public_blocks)
+    logger.info(json.dumps(public_blocks, indent=2))
             
     response = slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=thread_ts)
 
