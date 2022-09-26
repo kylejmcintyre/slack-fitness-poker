@@ -148,7 +148,7 @@ def start_game(slack, conn, game_id, state):
     state['river-bets-idx'] = -1
     state['river-bets-round-trip'] = False
 
-    state['folded'] = []
+    state['olded'] = []
 
     state['status'] = 'in-progress'
 
@@ -161,6 +161,15 @@ def start_game(slack, conn, game_id, state):
     advance_play(slack, conn, payload, state, None)
     
     conn.save_game(game_id, state)
+
+def resend(slack, user_id, game_id):
+    with Connection() as conn:
+        state = conn.load_game(game_id)
+
+        print(json.dumps(state))
+
+        if state['current_player'] != user_id:
+            return
 
 def fold(slack, user, name, payload):
 

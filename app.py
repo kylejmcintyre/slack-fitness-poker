@@ -149,6 +149,8 @@ def handle_resend_action(ack, respond, body, logger):
 
     logger.info((user_id, game_id))
 
+    engine.resend(slack, user_id, game_id)
+
 @bolt.action("fold")
 def handle_fold_action(ack, respond, body, logger):
     ack()
