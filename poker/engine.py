@@ -71,7 +71,7 @@ def start_game(slack, conn, game_id, state):
         {
           "type": "section",
           "text": {
-            "type": "plain_text",
+            "type": "mrkdwn",
             "text": text
           }
         },
