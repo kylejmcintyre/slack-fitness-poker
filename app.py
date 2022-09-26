@@ -16,6 +16,7 @@ from slack_sdk import WebClient
 from poker.structures import leagues, card_image_name
 
 dev_mode = os.environ.get("DEV_MODE", None)
+
 if dev_mode:
     from poker.local_db import Connection
 else:
@@ -63,10 +64,13 @@ def card_image():
 
 @bolt.command(f"/{game_command}")
 def poker_cmd(ack, respond, command, logger):
+
+    logger.info(f"Initializing a game: {command}")
+
     ack()
 
     user = command['user_id']
-    cmd  = command['text'] if 'text' in command else ''
+    cmd = command['text'] if 'text' in command else ''
     pieces = cmd.split()
 
 
@@ -132,6 +136,17 @@ def handle_reaction(event, logger):
     game_id = f"{event['item']['channel']}-{event['item']['ts']}"
 
     engine.maybe_add_player(slack, game_id, event['user'], logger)
+
+@bolt.action("resend")
+def handle_resend_action(ack, respond, body, logger):
+    ack()
+
+    logger.info(body)
+
+    user_id = body['user']['id']
+    payload = json.loads(body['actions'][0]['value'])
+
+    engine.resend(slack, user_id, payload)
 
 @bolt.action("fold")
 def handle_fold_action(ack, respond, body, logger):

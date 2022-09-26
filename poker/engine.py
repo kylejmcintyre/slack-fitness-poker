@@ -15,6 +15,7 @@ if dev_mode:
     from poker.local_db import Connection
 else:
     from poker.db import Connection
+
 import poker.scoring as scoring
 
 logging.basicConfig(level=logging.DEBUG)
@@ -57,7 +58,40 @@ def start_game(slack, conn, game_id, state):
     thread_ts = game_id.split("-")[1]
 
     order_msg = ", ".join([f"<@{state['handles'][player]}>" for player in state['players']])
-    response = slack.chat_postMessage(channel=channel, text=f"Game on! The order of play is {order_msg}. I'll deal.", thread_ts=thread_ts)
+
+    text = f"Game on! The order of play is {order_msg}. I'll deal."
+
+    payload = {
+      'player': None,
+      'thread_ts': thread_ts,
+      'game_id': game_id
+    }
+
+    public_blocks = [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": text
+          }
+        },
+        {
+          "type": "actions",
+          "elements": [
+            {
+              "type": "button",
+              "text": {
+                "type": "plain_text",
+                "text": "Resend Bet Buttons"
+              },
+              "value": json.dumps(payload),
+              "action_id": "resend"
+            }
+          ]
+        }
+    ]
+    
+    response = slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=thread_ts)
 
     time.sleep(0.1)
 
@@ -123,15 +157,24 @@ def start_game(slack, conn, game_id, state):
 
     state['status'] = 'in-progress'
 
-    payload = {
-      'player': None,
-      'thread_ts': thread_ts,
-      'game_id': game_id
-    }
-
     advance_play(slack, conn, payload, state, None)
     
     conn.save_game(game_id, state)
+
+def resend(slack, user_id, payload):
+
+    with Connection() as conn:
+        state = conn.load_game(payload['game_id'])
+
+        print((state['handles'][state['current_player']], user_id))
+
+        if state['handles'][state['current_player']] != user_id or state['status'] != 'in-progress':
+            return
+
+        payload['player'] = state['current_player']
+        blocks = get_bet_blocks(payload, state)
+
+        response = slack.chat_postEphemeral(channel=channel, thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
 
 def fold(slack, user, name, payload):
 
@@ -382,9 +425,21 @@ def advance_play(slack, conn, payload, state, msg):
             handle = state['handles'][state['current_player']]
 
             if msg:
-                slack.chat_postMessage(channel=channel, text=msg + f" The bet is to <@{handle}>", thread_ts=payload['thread_ts'])
-            else: 
-                slack.chat_postMessage(channel=channel, text=f"The bet is to <@{handle}>", thread_ts=payload['thread_ts'])
+                text = msg + f" The bet is to <@{handle}>"
+            else:
+                text = f"The bet is to <@{handle}>"
+
+            public_blocks = [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": text
+                  }
+                }
+            ]
+            
+            slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=payload['thread_ts'])
 
             response = slack.chat_postEphemeral(channel=channel, thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
         else:
