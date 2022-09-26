@@ -78,7 +78,7 @@ def start_game(slack, conn, game_id, state):
               "type": "button",
               "text": {
                 "type": "plain_text",
-                "text": "Click this to resend missing bet buttons",
+                "text": "Resend Bet Buttons"
               },
               "value": game_id,
               "action_id": "resend"
