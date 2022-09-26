@@ -11,12 +11,11 @@ channel = os.environ.get("SLACK_CHANNEL")
 
 from poker.structures import leagues, cards, card_image_name, card_textual_rep
 
-dev_mode = True
+if dev_mode:
+    from poker.local_db import Connection
+else:
+    from poker.db import Connection
 
-#if dev_mode:
-#from poker.local_db import Connection
-#else:
-from poker.db import Connection
 import poker.scoring as scoring
 
 logging.basicConfig(level=logging.DEBUG)

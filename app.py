@@ -16,12 +16,11 @@ from slack_sdk import WebClient
 from poker.structures import leagues, card_image_name
 
 dev_mode = os.environ.get("DEV_MODE", None)
-dev_mode = True
 
-#if dev_mode:
-#    from poker.local_db import Connection
-#else:
-from poker.db import Connection
+if dev_mode:
+    from poker.local_db import Connection
+else:
+    from poker.db import Connection
 
 import poker.engine as engine
 
