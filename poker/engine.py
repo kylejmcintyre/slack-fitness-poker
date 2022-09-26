@@ -11,10 +11,12 @@ channel = os.environ.get("SLACK_CHANNEL")
 
 from poker.structures import leagues, cards, card_image_name, card_textual_rep
 
-if dev_mode:
-    from poker.local_db import Connection
-else:
-    from poker.db import Connection
+dev_mode = True
+
+#if dev_mode:
+from poker.local_db import Connection
+#else:
+#    from poker.db import Connection
 import poker.scoring as scoring
 
 logging.basicConfig(level=logging.DEBUG)
@@ -379,12 +381,38 @@ def advance_play(slack, conn, payload, state, msg):
             blocks = get_bet_blocks(payload, state)
             time.sleep(2)
 
-            handle = state['handles'][state['current_player']]
-
             if msg:
-                slack.chat_postMessage(channel=channel, text=msg + f" The bet is to <@{handle}>", thread_ts=payload['thread_ts'])
-            else: 
-                slack.chat_postMessage(channel=channel, text=f"The bet is to <@{handle}>", thread_ts=payload['thread_ts'])
+                text = msg + f" The bet is to <@{handle}>"
+            else:
+                text = f"The bet is to <@{handle}>"
+
+            public_blocks = {
+              "blocks": [
+                {
+                    "type": "section",
+                      "text": {
+                        "type": "plain_text",
+                        "text": text
+                      }
+                    },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Resend",
+                      },
+                      "value": json.dumps(payload),
+                      "action_id": "resend"
+                    }
+                  ]
+                }
+              ]
+            }
+            
+            slack.chat_postMessage(channel=channel, text=_text, blocks=public_blocks, thread_ts=payload['thread_ts'])
 
             response = slack.chat_postEphemeral(channel=channel, thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
         else:
