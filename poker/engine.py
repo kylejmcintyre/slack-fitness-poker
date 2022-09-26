@@ -62,8 +62,7 @@ def start_game(slack, conn, game_id, state):
 
     text = f"Game on! The order of play is {order_msg}. I'll deal."
 
-    public_blocks = {
-      "blocks": [
+    public_blocks = [
         {
           "type": "section",
           "text": {
@@ -85,10 +84,8 @@ def start_game(slack, conn, game_id, state):
             }
           ]
         }
-      ]
-    }
-
-    print(json.dumps(public_blocks, indent=2))
+    ]
+    
     response = slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=thread_ts)
 
     time.sleep(0.1)
@@ -418,8 +415,7 @@ def advance_play(slack, conn, payload, state, msg):
             else:
                 text = f"The bet is to <@{handle}>"
 
-            public_blocks = {
-              "blocks": [
+            public_blocks = [
                 {
                   "type": "section",
                   "text": {
@@ -427,8 +423,7 @@ def advance_play(slack, conn, payload, state, msg):
                     "text": text
                   }
                 }
-              ]
-            }
+            ]
             
             slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=payload['thread_ts'])
 
