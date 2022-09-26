@@ -145,11 +145,9 @@ def handle_resend_action(ack, respond, body, logger):
     logger.info(body)
 
     user_id = body['user']['id']
-    game_id = body['actions'][0]['value']
+    payload = json.loads(body['actions'][0]['value'])
 
-    logger.info((user_id, game_id))
-
-    engine.resend(slack, user_id, game_id)
+    engine.resend(slack, user_id, payload)
 
 @bolt.action("fold")
 def handle_fold_action(ack, respond, body, logger):

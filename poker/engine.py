@@ -62,6 +62,12 @@ def start_game(slack, conn, game_id, state):
 
     text = f"Game on! The order of play is {order_msg}. I'll deal."
 
+    payload = {
+      'player': None,
+      'thread_ts': thread_ts,
+      'game_id': game_id
+    }
+
     public_blocks = [
         {
           "type": "section",
@@ -79,7 +85,7 @@ def start_game(slack, conn, game_id, state):
                 "type": "plain_text",
                 "text": "Resend Bet Buttons"
               },
-              "value": game_id,
+              "value": json.dumps(payload),
               "action_id": "resend"
             }
           ]
@@ -152,24 +158,21 @@ def start_game(slack, conn, game_id, state):
 
     state['status'] = 'in-progress'
 
-    payload = {
-      'player': None,
-      'thread_ts': thread_ts,
-      'game_id': game_id
-    }
-
     advance_play(slack, conn, payload, state, None)
     
     conn.save_game(game_id, state)
 
-def resend(slack, user_id, game_id):
+def resend(slack, user_id, payload):
+
+    print(payload)
     with Connection() as conn:
         state = conn.load_game(game_id)
+        print(state)
 
-        print(json.dumps(state))
-
-        if state['current_player'] != user_id:
+        if state['handles'][state['current_player']] != user_id:
             return
+
+        #advance_play(slack, conn, payload, state, msg)
 
 def fold(slack, user, name, payload):
 
