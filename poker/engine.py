@@ -59,7 +59,36 @@ def start_game(slack, conn, game_id, state):
     thread_ts = game_id.split("-")[1]
 
     order_msg = ", ".join([f"<@{state['handles'][player]}>" for player in state['players']])
-    response = slack.chat_postMessage(channel=channel, text=f"Game on! The order of play is {order_msg}. I'll deal.", thread_ts=thread_ts)
+
+    text = f"Game on! The order of play is {order_msg}. I'll deal."
+
+    public_blocks = {
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "plain_text",
+            "text": text
+          }
+        },
+        {
+          "type": "actions",
+          "elements": [
+            {
+              "type": "button",
+              "text": {
+                "type": "plain_text",
+                "text": "Click this to resend missing bet buttons",
+              },
+              "value": game_id,
+              "action_id": "resend"
+            }
+          ]
+        }
+      ]
+    }
+            
+    response = slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=thread_ts)
 
     time.sleep(0.1)
 
@@ -391,30 +420,16 @@ def advance_play(slack, conn, payload, state, msg):
             public_blocks = {
               "blocks": [
                 {
-                    "type": "section",
-                      "text": {
-                        "type": "plain_text",
-                        "text": text
-                      }
-                    },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "Resend",
-                      },
-                      "value": json.dumps(payload),
-                      "action_id": "resend"
-                    }
-                  ]
+                  "type": "section",
+                  "text": {
+                    "type": "plain_text",
+                    "text": text
+                  }
                 }
               ]
             }
             
-            slack.chat_postMessage(channel=channel, text=_text, blocks=public_blocks, thread_ts=payload['thread_ts'])
+            slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=payload['thread_ts'])
 
             response = slack.chat_postEphemeral(channel=channel, thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
         else:
