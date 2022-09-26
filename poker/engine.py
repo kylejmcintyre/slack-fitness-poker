@@ -166,6 +166,8 @@ def resend(slack, user_id, payload):
     with Connection() as conn:
         state = conn.load_game(payload['game_id'])
 
+        logger.info((state['handles'][state['current_player']], user_id))
+
         if state['handles'][state['current_player']] != user_id or state['status'] != 'in-progress':
             return
 
