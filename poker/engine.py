@@ -164,15 +164,16 @@ def start_game(slack, conn, game_id, state):
 
 def resend(slack, user_id, payload):
 
-    print(payload)
     with Connection() as conn:
         state = conn.load_game(payload['game_id'])
-        print(state)
 
-        if state['handles'][state['current_player']] != user_id:
+        if state['handles'][state['current_player']] != user_id or state['status'] != 'in-progress':
             return
 
-        #advance_play(slack, conn, payload, state, msg)
+        payload['player'] = state['current_player']
+        blocks = get_bet_blocks(payload, state)
+
+        response = slack.chat_postEphemeral(channel=channel, thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
 
 def fold(slack, user, name, payload):
 
