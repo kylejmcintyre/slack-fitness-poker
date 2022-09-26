@@ -63,10 +63,13 @@ def card_image():
 
 @bolt.command(f"/{game_command}")
 def poker_cmd(ack, respond, command, logger):
+
+    logger.info(f"Initializing a game: {command}")
+
     ack()
 
     user = command['user_id']
-    cmd  = command['text'] if 'text' in command else ''
+    cmd e= command['text'] if 'text' in command else ''
     pieces = cmd.split()
 
 
