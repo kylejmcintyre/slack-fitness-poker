@@ -433,7 +433,7 @@ def advance_play(slack, conn, payload, state, msg):
                 {
                   "type": "section",
                   "text": {
-                    "type": "plain_text",
+                    "type": "mrkdwn",
                     "text": text
                   }
                 }
@@ -451,7 +451,7 @@ def advance_play(slack, conn, payload, state, msg):
                 blocks = [
                     {
                        "title": {
-                          "type": "plain_text",
+                          "type": "mrkdwn",
                           "text": f"Here's the flop!"
                         },
                         "type": "image",
