@@ -83,7 +83,7 @@ def poker_cmd(ack, respond, command, logger):
     league = None
 
     if league_in.lower().strip() == 'random':
-        choices = list(leagues.keys())
+        choices = [c for c in list(leagues.keys()) if c != 'rupee']
         league = random.choice(choices)
     else:
         for name, league_data in leagues.items():
