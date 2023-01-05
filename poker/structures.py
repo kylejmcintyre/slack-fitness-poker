@@ -135,5 +135,11 @@ leagues = {
     "units": "rupees",
     "buyin": 5,
     "synonyms": ["rupees"]
+  },
+  "chin-up": {
+    "fitness": True,
+    "units": "chin-ups",
+    "buyin": 2,
+    "synonyms": ["chin-ups", "chinups"]
   }
 }
