@@ -1,14 +1,21 @@
 [Unit]
-Description=Slack Fitness Poker Bot
+Description=Slack Fitness Poker Bot with nginx
 After=network.target
+Wants=nginx.service
 
 [Service]
 Type=simple
 User=root
 WorkingDirectory=/root/slack-fitness-poker
 ExecStart=/root/slack-fitness-poker/start-poker.sh
+ExecStop=/bin/kill -TERM $MAINPID
 Restart=always
 RestartSec=10
+KillMode=mixed
+TimeoutStopSec=30
+
+# Ensure nginx stops when this service stops
+ExecStopPost=/bin/systemctl stop nginx
 
 [Install]
 WantedBy=multi-user.target
