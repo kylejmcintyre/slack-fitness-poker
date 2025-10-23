@@ -17,10 +17,8 @@ from poker.structures import leagues, card_image_name
 
 dev_mode = os.environ.get("DEV_MODE", None)
 
-if dev_mode:
-    from poker.local_db import Connection
-else:
-    from poker.db import Connection
+# Always use SQLite (removed PostgreSQL dependency)
+from poker.local_db import Connection
 
 import poker.engine as engine
 
@@ -104,10 +102,10 @@ def poker_cmd(ack, respond, command, logger):
         emoji = "💪"
     else:
         emoji = "💎"
-  
+
     if league_in.lower().strip() == 'random':
         response = slack.chat_postMessage(channel=channel, text=f"<@{user}> rolled the 🎲 on a random game and the result is {league} poker {emoji}! The buy-in is {buyin} {units}. Who's in?")
-    else: 
+    else:
         response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league} poker {emoji} . The buy-in is {buyin} {units}. Who's in?")
 
     game_id = f"{response['channel']}-{response['ts']}"
@@ -189,3 +187,11 @@ def handle_triple_action(ack, respond, body, logger):
     respond(delete_original=True)
 
     engine.triple(slack, body['user']['id'], body['user']['name'], json.loads(body['actions'][0]['value']))
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    host = os.environ.get('HOST', '0.0.0.0')
+    debug = os.environ.get('DEBUG', 'false').lower() == 'true'
+
+    print(f"Starting Slack Fitness Poker on {host}:{port}")
+    app.run(host=host, port=port, debug=debug)

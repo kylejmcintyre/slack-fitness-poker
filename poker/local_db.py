@@ -17,16 +17,26 @@ class Connection():
         pass
 
     def __enter__(self):
-        self.conn = sqlite3.connect(db_url)
+        self.conn = sqlite3.connect(db_url, timeout=30.0)
+        # Enable WAL mode for better concurrency
+        self.conn.execute('PRAGMA journal_mode=WAL;')
+        # Begin immediate transaction to lock the database
+        self.conn.execute('BEGIN IMMEDIATE;')
         return self
 
     def __exit__(self, type, value, traceback):
+        if type is None:
+            # No exception occurred, commit the transaction
+            self.conn.commit()
+        else:
+            # Exception occurred, rollback the transaction
+            self.conn.rollback()
         self.conn.close()
 
     def load_game(self, game_id):
-        query = f"SELECT state FROM game WHERE game_id = '{game_id}';"
+        query = "SELECT state FROM game WHERE game_id = ?;"
         cur = self.conn.cursor()
-        cur.execute(query)
+        cur.execute(query, (game_id,))
         rows = cur.fetchall()
 
         if len(rows) == 0:
@@ -36,13 +46,14 @@ class Connection():
 
     def save_game(self, game_id, state):
         state = json.dumps(state)
-        stmt = f"INSERT INTO game (game_id, state) VALUES ('{game_id}', ?) ON CONFLICT (game_id) DO UPDATE SET state = ?"
+        stmt = "INSERT INTO game (game_id, state) VALUES (?, ?) ON CONFLICT (game_id) DO UPDATE SET state = ?"
 
         cur = self.conn.cursor()
-        cur.execute(stmt, (state, state))
+        cur.execute(stmt, (game_id, state, state))
 
     def commit(self):
-        self.conn.commit()
+        # Commit is now handled automatically in __exit__
+        pass
 
 def bootstrap(fn):
     conn = sqlite3.connect(fn)

@@ -11,10 +11,8 @@ channel = os.environ.get("SLACK_CHANNEL")
 
 from poker.structures import leagues, cards, card_image_name, card_textual_rep
 
-if dev_mode:
-    from poker.local_db import Connection
-else:
-    from poker.db import Connection
+# Always use SQLite (removed PostgreSQL dependency)
+from poker.local_db import Connection
 
 import poker.scoring as scoring
 
@@ -24,23 +22,23 @@ def get_player_hand_text(state, player):
     return "  ".join([card_textual_rep(c) for c in state['hands'][player]])
 
 def maybe_add_player(slack, game_id, user, logger):
-    with Connection() as conn: 
+    with Connection() as conn:
 
         state = conn.load_game(game_id)
-    
+
         if state:
             if state['status'] == 'pending':
                 if user not in state['players'] or dev_mode:
                     logger.info('Adding player ' + user)
                     state['players'].append(user)
-    
+
                     logger.info(state)
-    
+
                     if len(state['players']) > 3:
                         start_game(slack, conn, game_id, state)
                     else:
                         conn.save_game(game_id, state)
-    
+
         conn.commit()
 
 def start_game(slack, conn, game_id, state):
@@ -90,7 +88,7 @@ def start_game(slack, conn, game_id, state):
           ]
         }
     ]
-    
+
     response = slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=thread_ts)
 
     time.sleep(0.1)
@@ -98,7 +96,7 @@ def start_game(slack, conn, game_id, state):
     deck = list(range(0, 52))
 
     random.shuffle(deck)
-    
+
     player_hands = {}
     player_bets = {}
 
@@ -158,7 +156,7 @@ def start_game(slack, conn, game_id, state):
     state['status'] = 'in-progress'
 
     advance_play(slack, conn, payload, state, None)
-    
+
     conn.save_game(game_id, state)
 
 def resend(slack, user_id, payload):
@@ -180,42 +178,42 @@ def fold(slack, user, name, payload):
 
     with Connection() as conn:
         state = conn.load_game(payload['game_id'])
-    
+
         if state['current_player'] != payload['player']:
             return
-    
+
         if payload['player'] not in state['player_labels']:
             state['player_labels'][payload['player']] = name
-    
+
         state['folded'].append(payload['player'])
-    
+
         msg = f"{name} folds."
-    
+
         advance_play(slack, conn, payload, state, msg)
-    
+
         conn.save_game(payload['game_id'], state)
         conn.commit()
-    
+
 def check(slack, user, name, payload, logger):
 
     with Connection() as conn:
         state = conn.load_game(payload['game_id'])
-    
+
         if state['current_player'] != payload['player']:
             return
-    
+
         if payload['player'] not in state['player_labels']:
             state['player_labels'][payload['player']] = name
-    
+
         msg = "calls" if state['bets'][payload['player']] < state['current_bet'] else "checks"
         msg = f"{name} {msg}."
-    
+
         state['bets'][payload['player']] = state['current_bet']
-    
-        logger.info(state) 
-    
+
+        logger.info(state)
+
         advance_play(slack, conn, payload, state, msg)
-        
+
         conn.save_game(payload['game_id'], state)
         conn.commit()
 
@@ -223,45 +221,45 @@ def single(slack, user, name, payload):
 
     with Connection() as conn:
         state = conn.load_game(payload['game_id'])
-    
+
         if state['current_player'] != payload['player']:
             return
-    
+
         if payload['player'] not in state['player_labels']:
             state['player_labels'][payload['player']] = name
-    
+
         state['current_bet'] = state['current_bet'] + state['buyin']
-    
+
         state['bets'][payload['player']] = state['current_bet']
         units = leagues[state['league']]['units']
-    
+
         msg = f"{name} raises {state['buyin']}, bringing the total bet to {state['current_bet']} {units}."
-    
+
         advance_play(slack, conn, payload, state, msg)
-    
+
         conn.save_game(payload['game_id'], state)
         conn.commit()
-    
+
 def double(slack, user, name, payload):
 
     with Connection() as conn:
         state = conn.load_game(payload['game_id'])
-    
+
         if state['current_player'] != payload['player']:
             return
-    
+
         if payload['player'] not in state['player_labels']:
             state['player_labels'][payload['player']] = name
-    
+
         state['current_bet'] = state['current_bet'] + (state['buyin'] * 2)
-    
+
         state['bets'][payload['player']] = state['current_bet']
         units = leagues[state['league']]['units']
-    
+
         msg = f"{name} raises {state['buyin'] * 2}, bringing the total to {state['current_bet']} {units}."
-    
+
         advance_play(slack, conn, payload, state, msg)
-    
+
         conn.save_game(payload['game_id'], state)
         conn.commit()
 
@@ -269,25 +267,25 @@ def triple(slack, user, name, payload):
 
     with Connection() as conn:
         state = conn.load_game(payload['game_id'])
-    
+
         if state['current_player'] != payload['player']:
             return
-    
+
         if payload['player'] not in state['player_labels']:
             state['player_labels'][payload['player']] = name
-    
+
         state['current_bet'] = state['current_bet'] + (state['buyin'] * 3)
-    
+
         state['bets'][payload['player']] = state['current_bet']
         units = leagues[state['league']]['units']
-    
+
         msg = f"{name} raises {state['buyin'] * 3}, bringing the total to {state['current_bet']} {units}."
-    
+
         advance_play(slack, conn, payload, state, msg)
-    
+
         conn.save_game(payload['game_id'], state)
         conn.commit()
-    
+
 
 def get_bet_blocks(payload, state):
     target_player = payload['player']
@@ -306,7 +304,7 @@ def get_bet_blocks(payload, state):
     if state['turn-bets-complete']:
         visible_community_cards += [state['river']]
 
-    if len(visible_community_cards) > 0:        
+    if len(visible_community_cards) > 0:
         community_cards = "\nCommunity cards: " + "  ".join([card_textual_rep(c) for c in visible_community_cards])
     else:
         community_cards = ''
@@ -438,7 +436,7 @@ def advance_play(slack, conn, payload, state, msg):
                   }
                 }
             ]
-            
+
             slack.chat_postMessage(channel=channel, text=text, blocks=public_blocks, thread_ts=payload['thread_ts'])
 
             response = slack.chat_postEphemeral(channel=channel, thread_ts=payload['thread_ts'], blocks=blocks, user=state['handles'][state['current_player']])
@@ -521,8 +519,8 @@ def finish_game(slack, conn, payload, state):
 
             best = None
 
-            for hand in itertools.combinations(all_cards, 5): 
-   
+            for hand in itertools.combinations(all_cards, 5):
+
                 b = scoring.best(hand)
                 s = ''.join([scoring.ord_lexico[i] for i in b])
 
@@ -550,7 +548,7 @@ def finish_game(slack, conn, payload, state):
         winning_hand = scoring.hands[int(results[0]['lex'][0])]['name']
 
         state['winners'] = list(winners)
-                
+
         if len(winners) == 1:
             winner = list(winners)[0]
             text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> - you won with a {winning_hand}"

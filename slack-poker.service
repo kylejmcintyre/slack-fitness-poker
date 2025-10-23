@@ -1,0 +1,14 @@
+[Unit]
+Description=Slack Fitness Poker Bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/slack-fitness-poker
+ExecStart=/root/slack-fitness-poker/start-poker.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
