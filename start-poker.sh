@@ -96,8 +96,8 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # Start the application
-echo -e "${GREEN}🚀 Starting poker app on ${HOST}:${PORT}${NC}"
+echo -e "${GREEN}🚀 Starting poker app with Gunicorn on ${HOST}:${PORT}${NC}"
 echo -e "${GREEN}🌐 Available at: https://bluebirdtech.duckdns.org${NC}"
 echo -e "${YELLOW}Press Ctrl+C to stop${NC}"
 
-exec python3 app.py
+exec gunicorn --bind ${HOST}:${PORT} --workers 4 --timeout 120 --keep-alive 2 --max-requests 1000 --max-requests-jitter 100 app:app

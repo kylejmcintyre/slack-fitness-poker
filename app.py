@@ -73,7 +73,7 @@ def poker_cmd(ack, respond, command, logger):
 
 
     if len(pieces) != 1:
-        league_opts = "|".join(list(leagues.keys()))
+        league_opts = "|".join(list(leagues.keys()) + ['random'])
         respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/game [{league_opts}]`")
         return
 
