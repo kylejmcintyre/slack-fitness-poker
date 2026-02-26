@@ -65,13 +65,7 @@ Texas Hold'em for Slack where bets are workouts (pushups, squats, planks, etc.) 
 4. Install to workspace, copy **Bot User OAuth Token** (xoxb-...) & **Signing Secret**.
 5. Add bot to #poker channel.
 
-## Leagues
-| League | Units | Buy-in | Fitness? |
-|--------|-------|--------|----------|
-| push-up | pushups | 5 | ✅ |
-| ... | ... | ... | ... |
-
-See `poker/structures.py`.
+**Leagues** (see `poker/structures.py`): push-up, sit-up, burpee, squat, lunge, plank, knuckle-up, russian-twist, push-plank, rupee, chin-up, `random`.
 
 ## Troubleshooting
 - **Timeout/502**: Check gunicorn workers `ps aux | grep gunicorn`, logs.
