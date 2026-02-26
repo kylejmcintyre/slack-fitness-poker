@@ -1,13 +1,85 @@
-# slack-fitness-poker
+# Slack Fitness Poker 🃏💪
 
-A Slack app/bot for playing Texas Hold 'Em where the currency is various workout tasks e.g. pushups.
-The intent is to make the workday more fun & active for remote teams.
+Texas Hold'em for Slack where bets are workouts (pushups, squats, planks, etc.) not money. Fun for remote teams!
 
-The app is ready to run on Heroku (Python+Postgres). However, it was coded with a minimalist mindset
-and should be easy to run outside of Heroku.
+![Poker Screenshot](static/readme.png)
 
-![Poker app](http://bluebirdtech.duckdns.org/static/readme.png)
+## Features
+- **Slash command `/game [league]`**: Start game (e.g. `/game push-up`, `/game random`).
+- **Leagues**: push-up, sit-up, burpee, squat, lunge, plank, knuckle-up, russian-twist, push-plank, rupee, chin-up, random.
+- **High stakes**: `/game push-up high-stakes` doubles buy-in.
+- **Reactions join**: First 4 reactors play in thread.
+- **SQLite DB**: Local games persistent.
+- **Nginx proxy + Let's Encrypt**: Production HTTPS.
+- **Systemd service**: Auto-start/restart.
 
-The game always consists of 4 players. One player initiates via `/game` and the first three people
-in the channel to react to the invitation message join the game, which occurs within a thread off
-the invitation message. The game result is broadcast back to the main channel. Multiple games can be played simultaneously. Order of play is random.
+## Quick Setup (Local/VPS)
+1. **Clone**:
+   ```
+   git clone git@github.com:kylejmcintyre/slack-fitness-poker.git
+   cd slack-fitness-poker
+   ```
+
+2. **Venv & Deps**:
+   ```
+   python3 -m venv poker-env
+   source poker-env/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. **.env** (copy template, fill Slack values):
+   ```
+   cp .env.example .env  # or create
+   # SLACK_BOT_TOKEN=xoxb-...
+   # SLACK_BOT_SECRET=...
+   # SLACK_CHANNEL=poker
+   ```
+
+4. **DB**:
+   ```
+   python poker/local_db.py
+   ```
+
+5. **Run**:
+   ```
+   ./start-poker.sh
+   ```
+   - Configs nginx, starts Gunicorn.
+   - Access: https://your-domain (port 5000 proxied).
+
+## Production (Ubuntu VPS)
+- **Nginx/SSL**: `./start-poker.sh` auto-configs (Certbot separate).
+- **Systemd**:
+  ```
+  sudo cp slack-poker.service /etc/systemd/system/
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now slack-poker.service
+  ```
+- Logs: `journalctl -fu slack-poker.service`
+- Nginx: `/var/log/nginx/`
+
+## Slack App Setup
+1. [api.slack.com/apps](https://api.slack.com/apps) > Create App.
+2. **Bot Token Scopes**: `commands`, `chat:write`, `reactions:read`.
+3. **Slash Commands**: `/game` → Request URL `https://your-domain/bolt`.
+4. Install to workspace, copy **Bot User OAuth Token** (xoxb-...) & **Signing Secret**.
+5. Add bot to #poker channel.
+
+## Leagues
+| League | Units | Buy-in | Fitness? |
+|--------|-------|--------|----------|
+| push-up | pushups | 5 | ✅ |
+| ... | ... | ... | ... |
+
+See `poker/structures.py`.
+
+## Troubleshooting
+- **Timeout/502**: Check gunicorn workers `ps aux | grep gunicorn`, logs.
+- **Token error**: Verify .env/Slack app.
+- **Nginx warn**: Ignore deprecation or update template.
+- Mem low: Edit script `--workers 2`.
+
+## License
+MIT
+
+Contribute/PR welcome!
