@@ -118,6 +118,12 @@ leagues = {
     "buyin": 5,
     "synonyms": ["squats"]
   },
+  "lunge": {
+    "fitness": True,
+    "units": "lunges",
+    "buyin": 5,
+    "synonyms": ["lunges"]
+  },
   "plank": {
     "fitness": True,
     "units": "seconds",
@@ -129,6 +135,18 @@ leagues = {
     "units": "knuckle-ups",
     "buyin": 5,
     "synonyms": ["knuckleup", "knuckleups", "knuckle-ups"]
+  },
+  "russian-twist": {
+    "fitness": True,
+    "units": "russian-twists",
+    "buyin": 10,
+    "synonyms": ["russians", "twists", "russiantwists"]
+  },
+  "push-plank": {
+    "fitness": True,
+    "units": "push-planks",
+    "buyin": 5,
+    "synonyms": ["push-up-to-plank", "push-up-to-planks", "pushplanks", "pushplank"]
   },
   "rupee": {
     "fitness": False,

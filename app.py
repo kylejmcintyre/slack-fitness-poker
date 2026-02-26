@@ -25,11 +25,12 @@ import poker.engine as engine
 logging.basicConfig(level=logging.DEBUG)
 
 token = os.environ.get("SLACK_BOT_TOKEN")
+secret = os.environ.get("SLACK_BOT_SECRET")
 channel = os.environ.get("SLACK_CHANNEL")
 game_command = os.environ.get("GAME_COMMAND") or "game"
 
 app = Flask(__name__, static_url_path='/static')
-bolt = App()
+bolt = App(token=token, signing_secret=secret)
 handler = SlackRequestHandler(bolt)
 
 slack = WebClient(token=token)
@@ -72,13 +73,15 @@ def poker_cmd(ack, respond, command, logger):
     pieces = cmd.split()
 
 
-    if len(pieces) != 1:
+    if len(pieces) < 1:
         league_opts = "|".join(list(leagues.keys()) + ['random'])
         respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/game [{league_opts}]`")
         return
 
     league_in = pieces[0]
     league = None
+
+    high_stakes = True if len(pieces) == 2 and pieces[1].lower() == 'high-stakes' else False
 
     if league_in.lower().strip() == 'random':
         choices = [c for c in list(leagues.keys()) if c != 'rupee']
@@ -98,15 +101,21 @@ def poker_cmd(ack, respond, command, logger):
     buyin = league_data['buyin']
     units = league_data['units']
 
+    league_label = league
+
+    if high_stakes:
+        buyin = buyin * 2
+        league_label = f"*high stakes* {league}"
+
     if league_data['fitness']:
         emoji = "💪"
     else:
         emoji = "💎"
 
     if league_in.lower().strip() == 'random':
-        response = slack.chat_postMessage(channel=channel, text=f"<@{user}> rolled the 🎲 on a random game and the result is {league} poker {emoji}! The buy-in is {buyin} {units}. Who's in?")
+        response = slack.chat_postMessage(channel=channel, text=f"<@{user}> rolled the 🎲 on a random game and the result is {league_label} poker {emoji}! The buy-in is {buyin} {units}. Who's in?")
     else:
-        response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league} poker {emoji} . The buy-in is {buyin} {units}. Who's in?")
+        response = slack.chat_postMessage(channel=channel, text=f"<@{user}> wants to play {league_label} poker {emoji} . The buy-in is {buyin} {units}. Who's in?")
 
     game_id = f"{response['channel']}-{response['ts']}"
 
