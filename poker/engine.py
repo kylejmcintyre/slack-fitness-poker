@@ -505,6 +505,7 @@ def finish_game(slack, conn, payload, state):
 
     if len(active) == 1:
         winner = active[0]
+        state['winners'] = [winner]
         text = f"Go ahead and rest on your laurels <@{state['handles'][winner]}> ({winner}) - you won!"
         for player in folded:
             text += f"\n- <@{state['handles'][player]}> owes {state['bets'][player]} {leagues[state['league']]['units']}"

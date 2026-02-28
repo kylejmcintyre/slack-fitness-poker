@@ -4,6 +4,8 @@ import os
 import random
 import time
 import pathlib
+import sqlite3
+from collections import defaultdict
 
 from PIL import Image
 import io
@@ -78,6 +80,67 @@ def poker_cmd(ack, respond, command, logger):
         respond(response_type="ephemeral", text=f"Which league do you want to play in? Try something like `/game [{league_opts}]`")
         return
 
+    if pieces[0].lower() == 'stats':
+        last_n = 50
+        if len(pieces) >= 2:
+            try:
+                last_n = int(pieces[1])
+            except ValueError:
+                respond(response_type="ephemeral", text=f"Usage: `/game stats [last N games]` — N must be a number")
+                return
+
+        db_path = os.environ.get("DATABASE_URL") or 'poker.db'
+        con = sqlite3.connect(db_path)
+        rows = con.execute("SELECT state FROM game").fetchall()
+        con.close()
+
+        complete = [json.loads(r[0]) for r in rows if json.loads(r[0]).get('status') == 'complete']
+        complete = complete[-last_n:]
+
+        stats = defaultdict(lambda: {'name': '', 'games': 0, 'wins': 0})
+
+        for state in complete:
+            players = state.get('players', [])
+            winners = state.get('winners', [])
+            labels = state.get('player_labels', {})
+            folded = state.get('folded', [])
+
+            # Fix for historical games where all-fold winner wasn't recorded
+            if not winners:
+                remaining = [p for p in players if p not in folded]
+                if remaining:
+                    winners = remaining
+
+            for p in players:
+                stats[p]['name'] = labels.get(p, p) or p
+                stats[p]['games'] += 1
+                if p in winners:
+                    stats[p]['wins'] += 1
+
+        rows_out = sorted(
+            [(s['name'], s['games'], s['wins'])
+             for s in stats.values() if s['games'] >= 3],
+            key=lambda x: -(x[2] / x[1] if x[1] else 0)
+        )
+
+        if not rows_out:
+            respond(response_type="ephemeral", text="No stats yet!")
+            return
+
+        title = f"*Poker Stats — Last {last_n} Games* (min 3 games)"
+        lines = [title, "```"]
+        lines.append(f"{'Player':<22} {'G':>4} {'W':>4} {'L':>4} {'Win%':>6}")
+        lines.append("-" * 44)
+        for name, games, wins in rows_out:
+            losses = games - wins
+            win_pct = wins / games * 100
+            lines.append(f"{name:<22} {games:>4} {wins:>4} {losses:>4} {win_pct:>5.1f}%")
+        lines.append("```")
+
+        slack.chat_postMessage(channel=channel, text="\n".join(lines))
+        respond(response_type="ephemeral", text="Stats posted to #poker!")
+        return
+
     league_in = pieces[0]
     league = None
 
@@ -127,6 +190,7 @@ def poker_cmd(ack, respond, command, logger):
       'buyin': int(buyin),
       'status': 'pending',
       'players': [user],
+      'created_at': float(response['ts']),
     }
 
     with Connection() as conn:
